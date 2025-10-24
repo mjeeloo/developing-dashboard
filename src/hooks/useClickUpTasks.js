@@ -124,7 +124,6 @@ export function useClickUpTasks() {
           include_closed: 'true',
           subtasks: 'true',
           order_by: 'created',
-          custom_fields: 'true',
         });
 
         const response = await fetch(
