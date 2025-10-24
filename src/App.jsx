@@ -43,7 +43,11 @@ function App() {
   );
 
   const assignedTasks = useMemo(
-    () => tasks.filter((task) => Boolean(task.assignee)),
+    () =>
+      tasks.filter((task) => {
+        const statusType = typeof task.statusType === 'string' ? task.statusType.toLowerCase() : '';
+        return Boolean(task.assignee) && statusType !== 'closed';
+      }),
     [tasks],
   );
 

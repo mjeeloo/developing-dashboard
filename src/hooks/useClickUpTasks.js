@@ -81,6 +81,7 @@ const mapTask = (task) => {
     id: task.custom_id || task.id,
     name: task.name,
     status: task.status?.status || task.status?.type || 'Unknown',
+    statusType: task.status?.type || null,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
