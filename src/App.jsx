@@ -42,16 +42,21 @@ function App() {
     [tasks],
   );
 
+  const assignedTasks = useMemo(
+    () => tasks.filter((task) => Boolean(task.assignee)),
+    [tasks],
+  );
+
   const tasksByAssignee = useMemo(() => {
-    return tasks.reduce((accumulator, task) => {
-      const owner = task.assignee ?? 'Unassigned';
+    return assignedTasks.reduce((accumulator, task) => {
+      const owner = task.assignee;
       if (!accumulator[owner]) {
         accumulator[owner] = [];
       }
       accumulator[owner].push(task);
       return accumulator;
     }, {});
-  }, [tasks]);
+  }, [assignedTasks]);
 
   return (
     <div className="app">
@@ -70,12 +75,12 @@ function App() {
         <MetricCard
           title="Vulnerability tasks"
           value={status === 'success' ? vulnerabilityCount : '—'}
-          subtitle={'Tagged with "Vulnerability"'}
+          subtitle='Tagged with "Vulnerability"'
         />
         <MetricCard
           title="Downtime follow-ups"
           value={status === 'success' ? downtimeCount : '—'}
-          subtitle={'Tagged with "Downtime"'}
+          subtitle='Tagged with "Downtime"'
         />
         <MetricCard
           title="Urgent priority"
