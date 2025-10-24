@@ -11,8 +11,6 @@ support and operational risk context.
   visible.
 - Grouped task summaries by assignee (only showing tasks with an assigned owner) to help balance
   workloads.
-- Sample ClickUp task data stored locally in `src/data/tasks.js` that you can swap with live API
-  results or exports.
 
 ## Getting started
 
