@@ -19,21 +19,36 @@ const formatDate = (value) => {
   }).format(date);
 };
 
+const hasTag = (tags, targetTag) => {
+  if (!Array.isArray(tags) || typeof targetTag !== 'string') {
+    return false;
+  }
+
+  const normalizedTarget = targetTag.trim().toLowerCase();
+  return tags.some((tag) => {
+    if (typeof tag !== 'string') {
+      return false;
+    }
+
+    return tag.trim().toLowerCase() === normalizedTarget;
+  });
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
 
   const supportTasks = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Support')),
+    () => tasks.filter((task) => hasTag(task.tags, 'Support')),
     [tasks],
   );
 
   const vulnerabilityCount = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Vulnerability')).length,
+    () => tasks.filter((task) => hasTag(task.tags, 'Vulnerability')).length,
     [tasks],
   );
 
   const downtimeCount = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Downtime')).length,
+    () => tasks.filter((task) => hasTag(task.tags, 'Downtime')).length,
     [tasks],
   );
 

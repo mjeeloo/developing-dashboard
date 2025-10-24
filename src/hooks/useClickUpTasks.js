@@ -22,6 +22,15 @@ const normalizeCustomFieldOptions = (field) => {
   );
 };
 
+const normalizeTagLabel = (tag) => {
+  if (typeof tag !== 'string') {
+    return null;
+  }
+
+  const trimmed = tag.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 const extractTagsFromCustomField = (task) => {
   const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
   const tagsField = customFields.find((field) => {
@@ -64,11 +73,12 @@ const extractTagsFromCustomField = (task) => {
   };
 
   if (Array.isArray(value)) {
-    return value.map(mapOption).filter(Boolean);
+    return value.map(mapOption).map(normalizeTagLabel).filter(Boolean);
   }
 
   const mappedValue = mapOption(value);
-  return mappedValue ? [mappedValue] : [];
+  const normalized = normalizeTagLabel(mappedValue);
+  return normalized ? [normalized] : [];
 };
 
 const mapTask = (task) => {
