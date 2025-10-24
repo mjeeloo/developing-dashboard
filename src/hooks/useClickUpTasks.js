@@ -2,6 +2,75 @@ import { useEffect, useMemo, useState } from 'react';
 
 const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
+const normalizeCustomFieldOptions = (field) => {
+  const options = field?.type_config?.options;
+  if (!Array.isArray(options)) {
+    return new Map();
+  }
+
+  return new Map(
+    options
+      .map((option) => {
+        const identifier = option?.id ?? option?.uuid;
+        const label = option?.name ?? option?.label ?? option?.value;
+        if (!identifier || !label) {
+          return null;
+        }
+        return [identifier, label];
+      })
+      .filter(Boolean),
+  );
+};
+
+const extractTagsFromCustomField = (task) => {
+  const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
+  const tagsField = customFields.find((field) => {
+    const fieldName = field?.name || field?.label;
+    return typeof fieldName === 'string' && fieldName.toLowerCase() === 'tags';
+  });
+
+  if (!tagsField) {
+    return [];
+  }
+
+  const { value } = tagsField;
+  if (!value) {
+    return [];
+  }
+
+  const optionLookup = normalizeCustomFieldOptions(tagsField);
+
+  const mapOption = (option) => {
+    if (!option) {
+      return null;
+    }
+
+    if (typeof option === 'string') {
+      return optionLookup.get(option) || option;
+    }
+
+    if (typeof option === 'object') {
+      const optionId = option.id ?? option.uuid;
+      const optionName = option.name ?? option.label ?? option.value;
+      if (optionName) {
+        return optionName;
+      }
+      if (optionId) {
+        return optionLookup.get(optionId) || optionId;
+      }
+    }
+
+    return null;
+  };
+
+  if (Array.isArray(value)) {
+    return value.map(mapOption).filter(Boolean);
+  }
+
+  const mappedValue = mapOption(value);
+  return mappedValue ? [mappedValue] : [];
+};
+
 const mapTask = (task) => {
   const assigneeNames = (task.assignees || [])
     .map((assignee) => assignee.username || assignee.email || assignee.id)
@@ -15,7 +84,7 @@ const mapTask = (task) => {
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
-    tags: (task.tags || []).map((tag) => tag.name).filter(Boolean),
+    tags: extractTagsFromCustomField(task),
     url: task.url,
   };
 };
@@ -55,6 +124,7 @@ export function useClickUpTasks() {
           include_closed: 'true',
           subtasks: 'true',
           order_by: 'created',
+          custom_fields: 'true',
         });
 
         const response = await fetch(

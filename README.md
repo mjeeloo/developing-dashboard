@@ -9,7 +9,8 @@ support and operational risk context.
   `Urgent` priority.
 - A dedicated table with every task carrying the `Support` tag so customer-impacting tickets stay
   visible.
-- Grouped task summaries by assignee (including unassigned work) to help balance workloads.
+- Grouped task summaries by assignee (only showing tasks with an assigned owner) to help balance
+  workloads.
 - Sample ClickUp task data stored locally in `src/data/tasks.js` that you can swap with live API
   results or exports.
 
@@ -54,6 +55,14 @@ cp .env.local.example .env.local
 Restart the dev server after changing environment variables. When the app loads it will call
 `https://api.clickup.com/api/v2/list/<LIST_ID>/task` and surface the live data in the Support table,
 assignee workload section, and key metrics.
+
+### Custom field requirements
+
+The dashboard relies on a ClickUp **custom field** named `Tags` to categorize tasks for the Support
+table and the key indicators. Configure this field as a Labels/Multi-select field and apply the
+values `Support`, `Vulnerability`, and `Downtime` (along with any others you wish to surface). The
+native ClickUp tag system is ignored—only the selections in the `Tags` custom field will appear in
+the dashboard.
 
 ## Dependencies
 
