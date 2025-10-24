@@ -70,12 +70,12 @@ function App() {
         <MetricCard
           title="Vulnerability tasks"
           value={status === 'success' ? vulnerabilityCount : '—'}
-          subtitle="Tagged with \"Vulnerability\""
+          subtitle={'Tagged with "Vulnerability"'}
         />
         <MetricCard
           title="Downtime follow-ups"
           value={status === 'success' ? downtimeCount : '—'}
-          subtitle="Tagged with \"Downtime\""
+          subtitle={'Tagged with "Downtime"'}
         />
         <MetricCard
           title="Urgent priority"
