@@ -151,8 +151,7 @@
 }
 
 .panel-header {
-  padding: 1.5rem 1.75rem 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem 1.75rem 1rem;
 }
 
 .panel-header h2 {
