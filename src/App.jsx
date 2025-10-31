@@ -65,32 +65,32 @@ function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <p className="workspace-label">Developing workspace</p>
-        <div className="header-image" role="img" aria-label="Support and Operations dashboard header placeholder">
-          <img src={logo} alt="" />
-        </div>
-      </header>
+      <div className="app-grid">
+        <header className="header">
+          <p className="workspace-label">Developing workspace</p>
+          <div className="header-image" role="img" aria-label="Support and Operations dashboard header placeholder">
+            <img src={logo} alt="" />
+          </div>
+        </header>
+        <section className="metrics" aria-label="Key risk indicators">
+          <MetricCard
+            title="Vulnerability tasks"
+            value={status === 'success' ? vulnerabilityCount : '—'}
+            subtitle='Tagged with "Vulnerability"'
+          />
+          <MetricCard
+            title="Downtime follow-ups"
+            value={status === 'success' ? downtimeCount : '—'}
+            subtitle='Tagged with "Downtime"'
+          />
+          <MetricCard
+            title="Urgent priority"
+            value={status === 'success' ? urgentCount : '—'}
+            subtitle="Priority marked Urgent"
+          />
+        </section>
 
-      <section className="metrics" aria-label="Key risk indicators">
-        <MetricCard
-          title="Vulnerability tasks"
-          value={status === 'success' ? vulnerabilityCount : '—'}
-          subtitle='Tagged with "Vulnerability"'
-        />
-        <MetricCard
-          title="Downtime follow-ups"
-          value={status === 'success' ? downtimeCount : '—'}
-          subtitle='Tagged with "Downtime"'
-        />
-        <MetricCard
-          title="Urgent priority"
-          value={status === 'success' ? urgentCount : '—'}
-          subtitle="Priority marked Urgent"
-        />
-      </section>
-
-      <section className="panel" aria-labelledby="support-tasks-heading">
+        <section className="panel support-panel" aria-labelledby="support-tasks-heading">
         <div className="panel-header">
           <h2 id="support-tasks-heading">Support tag focus</h2>
           <p className="panel-subtitle">All tasks labeled with the Support tag</p>
@@ -143,9 +143,9 @@ function App() {
             </div>
           ) : null}
         </div>
-      </section>
+        </section>
 
-      <section className="panel" aria-labelledby="assignee-heading">
+        <section className="panel assignee-panel" aria-labelledby="assignee-heading">
         <div className="panel-header">
           <h2 id="assignee-heading">Workload by assignee</h2>
           <p className="panel-subtitle">
@@ -202,7 +202,8 @@ function App() {
             </div>
           ) : null}
         </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
