@@ -6,6 +6,6 @@ sudo apt-get -y install npm
 cd ~/developing-dashboard
 git pull
 sudo npm update
-open https://nederland.fm/radio/joe
+open https://nederland.fm/radio/joe &
 npm run dev
-open http://localhost:5173/
+open http://localhost:5173/ &
