@@ -53,14 +53,19 @@ const normalizeCustomFieldOptions = (field) => {
         if (!identifier || !label) {
           return null;
         }
-        return [identifier, label];
+        return [
+          identifier,
+          {
+            label,
+            color: option?.color ?? option?.color_hex ?? null,
+          },
+        ];
       })
       .filter(Boolean),
   );
 };
 
-const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
-  const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
+const extractTagsFromCustomField = (customFields, { tagsFieldId } = {}) => {
   const normalizedId = typeof tagsFieldId === 'string' ? tagsFieldId.trim() : '';
   const tagsField = customFields.find((field) => {
     if (!field) {
@@ -88,15 +93,26 @@ const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
   });
 
   if (!tagsField) {
-    return [];
+    return { tags: [], tagDetails: [] };
   }
 
   const { value } = tagsField;
   if (!value) {
-    return [];
+    return { tags: [], tagDetails: [] };
   }
 
   const optionLookup = normalizeCustomFieldOptions(tagsField);
+
+  const tags = [];
+  const tagDetails = [];
+
+  const addTag = (label, color) => {
+    if (!label) {
+      return;
+    }
+    tags.push(label);
+    tagDetails.push({ name: label, color: color ?? null });
+  };
 
   const mapOption = (option) => {
     if (!option) {
@@ -104,17 +120,25 @@ const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
     }
 
     if (typeof option === 'string') {
-      return optionLookup.get(option) || option;
+      const details = optionLookup.get(option);
+      const label = details?.label ?? option;
+      addTag(label, details?.color ?? null);
+      return label;
     }
 
     if (typeof option === 'object') {
       const optionId = option.id ?? option.uuid;
       const optionName = option.name ?? option.label ?? option.value;
+      const details = optionId ? optionLookup.get(optionId) : null;
       if (optionName) {
+        addTag(optionName, details?.color ?? option.color ?? option.color_hex ?? null);
         return optionName;
       }
       if (optionId) {
-        return optionLookup.get(optionId) || optionId;
+        const fallback = optionLookup.get(optionId);
+        const label = fallback?.label ?? optionId;
+        addTag(label, fallback?.color ?? null);
+        return label;
       }
     }
 
@@ -122,11 +146,126 @@ const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
   };
 
   if (Array.isArray(value)) {
-    return value.map(mapOption).filter(Boolean);
+    value.forEach(mapOption);
+    return { tags, tagDetails };
   }
 
-  const mappedValue = mapOption(value);
-  return mappedValue ? [mappedValue] : [];
+  mapOption(value);
+  return { tags, tagDetails };
+};
+
+const findCustomField = (customFields, { id, nameIncludes, type } = {}) => {
+  const normalizedId = typeof id === 'string' ? id.trim() : '';
+  const normalizedName = normalizeString(nameIncludes);
+  const normalizedType = normalizeString(type);
+
+  return customFields.find((field) => {
+    if (!field) {
+      return false;
+    }
+
+    const fieldId = field.id || field.uuid;
+    if (normalizedId && fieldId === normalizedId) {
+      return true;
+    }
+
+    const fieldType = normalizeString(field.type);
+    if (normalizedType && fieldType !== normalizedType) {
+      return false;
+    }
+
+    const fieldName = normalizeString(field.name || field.label);
+    if (normalizedName && fieldName.includes(normalizedName)) {
+      return true;
+    }
+
+    return false;
+  });
+};
+
+const extractProjectFromCustomField = (customFields, { projectFieldId } = {}) => {
+  const projectField = findCustomField(customFields, {
+    id: projectFieldId,
+    nameIncludes: 'project',
+    type: 'list_relationship',
+  });
+
+  if (!projectField || projectField.value == null) {
+    return null;
+  }
+
+  const rawValue = projectField.value;
+  const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+
+  const labels = values
+    .map((value) => {
+      if (!value) {
+        return null;
+      }
+
+      if (typeof value === 'string') {
+        return value;
+      }
+
+      if (typeof value === 'object') {
+        return value.name || value.label || value.value || value.id || null;
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+  if (labels.length === 0) {
+    return null;
+  }
+
+  return labels.join(', ');
+};
+
+const extractDeadlineFromCustomField = (customFields, { deadlineFieldId } = {}) => {
+  const deadlineField = findCustomField(customFields, {
+    id: deadlineFieldId,
+    nameIncludes: 'deadline',
+    type: 'date',
+  });
+
+  if (!deadlineField || deadlineField.value == null || deadlineField.value === '0') {
+    return null;
+  }
+
+  const rawValue = deadlineField.value;
+
+  const normalizeValue = (value) => {
+    if (value == null || value === '0') {
+      return null;
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const numeric = Number(value);
+      if (!Number.isNaN(numeric) && numeric > 0) {
+        return numeric;
+      }
+      const parsedDate = Date.parse(value);
+      return Number.isNaN(parsedDate) ? null : parsedDate;
+    }
+
+    if (typeof value === 'object') {
+      return normalizeValue(value.start ?? value.value ?? value.end ?? value.date ?? null);
+    }
+
+    return null;
+  };
+
+  const normalizedValue = normalizeValue(rawValue);
+  if (!normalizedValue) {
+    return null;
+  }
+
+  return new Date(normalizedValue).toISOString();
 };
 
 const DEFAULT_CUSTOM_FIELD_IDS = {
@@ -318,12 +457,16 @@ const mapTask = (task, options = {}) => {
     name: 'deadline',
   });
 
+  const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
+  const { tags, tagDetails } = extractTagsFromCustomField(customFields, options);
+
   return {
     id: task.custom_id || task.id,
     name: task.name,
     status: statusLabel,
     statusColor: task.status?.color || null,
     statusType: normalizedStatusType,
+    statusColor: task.status?.color || null,
     isClosed,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,

@@ -177,6 +177,86 @@ const formatDeadline = (value) => {
   }).format(date);
 };
 
+const clampAlpha = (value) => {
+  if (Number.isNaN(value) || value < 0) {
+    return 0;
+  }
+  if (value > 1) {
+    return 1;
+  }
+  return value;
+};
+
+const withAlpha = (color, alpha = 0.2) => {
+  if (typeof color !== 'string' || color.length === 0) {
+    return null;
+  }
+
+  const normalized = color.trim();
+  if (!normalized.startsWith('#')) {
+    return normalized;
+  }
+
+  let hex = normalized.slice(1);
+  if (hex.length === 3) {
+    hex = hex
+      .split('')
+      .map((char) => `${char}${char}`)
+      .join('');
+  }
+
+  if (hex.length !== 6) {
+    return normalized;
+  }
+
+  const parsed = Number.parseInt(hex, 16);
+  if (Number.isNaN(parsed)) {
+    return normalized;
+  }
+
+  const r = (parsed >> 16) & 255;
+  const g = (parsed >> 8) & 255;
+  const b = parsed & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${clampAlpha(alpha)})`;
+};
+
+const getStatusStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.45) || color,
+    backgroundColor: withAlpha(color, 0.18) || color,
+  };
+};
+
+const getPriorityStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.35) || color,
+    backgroundColor: withAlpha(color, 0.16) || color,
+  };
+};
+
+const getTagStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.35) || color,
+    backgroundColor: withAlpha(color, 0.18) || color,
+  };
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
@@ -377,25 +457,59 @@ function App() {
                     <span className="assignee-count">{ownedTasks.length} tasks</span>
                   </header>
                   <ul>
-                    {ownedTasks.map((task) => (
-                      <li key={task.id}>
-                        <div>
-                          <p className="task-name">{task.name}</p>
-                          <p className="task-meta">
-                            <span>{task.id}</span>
-                            <span aria-hidden="true">•</span>
-                            <span>{task.status}</span>
-                          </p>
-                        </div>
-                        <div className="task-tags">
-                          {task.tags.map((tag) => (
-                            <span className="tag" key={tag}>
-                              {tag}
+                    {ownedTasks.map((task) => {
+                      const normalizedStatus = task.status?.trim();
+                      const showStatus =
+                        normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
+                      const statusLabel = normalizedStatus ? normalizedStatus.toUpperCase() : '';
+
+                      return (
+                        <li key={task.id} className="assignee-task-card">
+                          <div className="assignee-task-heading">
+                            <p className="task-name">{task.name}</p>
+                          </div>
+                          <div className="task-meta-row">
+                            {showStatus ? (
+                              <span className="status-pill" style={getStatusStyles(task.statusColor)}>
+                                {statusLabel}
+                              </span>
+                            ) : null}
+                          <span
+                            className="priority-chip"
+                            style={getPriorityStyles(task.priorityColor)}
+                            title={`${task.priority} priority`}
+                          >
+                            <svg
+                              className="priority-flag-icon"
+                              viewBox="0 0 16 16"
+                              role="img"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                            <span className="sr-only">{`${task.priority} priority`}</span>
+                          </span>
+                          {(task.tagDetails && task.tagDetails.length > 0
+                            ? task.tagDetails
+                            : task.tags.map((tag) => ({ name: tag, color: null }))
+                          ).map((tag) => (
+                            <span className="tag-pill" key={tag.name} style={getTagStyles(tag.color)}>
+                              {tag.name}
                             </span>
                           ))}
-                        </div>
-                      </li>
-                    ))}
+                          {task.projectName ? (
+                            <span className="meta-pill task-project">{task.projectName}</span>
+                          ) : null}
+                          {task.deadline ? (
+                            <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
+                          ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </article>
               ))}
