@@ -262,7 +262,7 @@
 .assignee-card {
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 1.25rem;
+  padding: 0.9rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
