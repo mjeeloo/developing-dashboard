@@ -2,7 +2,7 @@
 # Startup script for the Developing TV dashboard
 sudo apt-get update
 sudo apt-get -y upgrade
-sudo apt-get -y install npm
+sudo apt-get -y install nodejs npm
 cd ~/developing-dashboard
 git pull
 sudo npm update
