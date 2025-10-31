@@ -2,6 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
+const resolveApiBase = () => {
+  const configuredBase = import.meta.env.VITE_CLICKUP_API_BASE_URL;
+  if (typeof configuredBase === 'string' && configuredBase.trim().length > 0) {
+    return configuredBase.trim();
+  }
+
+  if (import.meta.env.DEV) {
+    return '/clickup-api';
+  }
+
+  return CLICKUP_API_BASE;
+};
+
 const normalizeCustomFieldOptions = (field) => {
   const options = field?.type_config?.options;
   if (!Array.isArray(options)) {
@@ -95,13 +108,13 @@ export function useClickUpTasks() {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
 
-  const config = useMemo(
-    () => ({
+  const config = useMemo(() => {
+    return {
       token: import.meta.env.VITE_CLICKUP_API_TOKEN,
       listId: import.meta.env.VITE_CLICKUP_LIST_ID,
-    }),
-    [],
-  );
+      apiBase: resolveApiBase(),
+    };
+  }, []);
 
   useEffect(() => {
     if (!config.token || !config.listId) {
@@ -128,7 +141,7 @@ export function useClickUpTasks() {
         });
 
         const response = await fetch(
-          `${CLICKUP_API_BASE}/list/${config.listId}/task?${searchParams.toString()}`,
+          `${config.apiBase}/list/${config.listId}/task?${searchParams.toString()}`,
           {
             headers: {
               Authorization: config.token,

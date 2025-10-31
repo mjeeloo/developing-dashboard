@@ -42,6 +42,8 @@ VITE_CLICKUP_LIST_ID=901234567
 - `VITE_CLICKUP_API_TOKEN` should be a ClickUp personal token with permission to read the desired
   list.
 - `VITE_CLICKUP_LIST_ID` is the numeric list ID that you want to monitor.
+- Optionally, set `VITE_CLICKUP_API_BASE_URL` if you need to point at a proxy or self-hosted API
+  endpoint. When this variable is not provided the app will talk directly to the ClickUp REST API.
 
 You can also copy the provided `.env.local.example` file and replace the placeholder values with
 your real credentials:
@@ -50,9 +52,10 @@ your real credentials:
 cp .env.local.example .env.local
 ```
 
-Restart the dev server after changing environment variables. When the app loads it will call
-`https://api.clickup.com/api/v2/list/<LIST_ID>/task` and surface the live data in the Support table,
-assignee workload section, and key metrics.
+Restart the dev server after changing environment variables. During local development the Vite
+server proxies API requests to avoid browser CORS errors, so the app will call
+`/clickup-api/list/<LIST_ID>/task` and surface the live data in the Support table, assignee workload
+section, and key metrics.
 
 ### Custom field requirements
 
