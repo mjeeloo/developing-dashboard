@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
@@ -22,6 +22,38 @@ const formatDate = (value) => {
 
 function App() {
   const { tasks, status, error } = useClickUpTasks();
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000 * 30);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const currentTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }).format(now),
+    [now],
+  );
+
+  const currentDate = useMemo(
+    () =>
+      new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(now),
+    [now],
+  );
 
   const activeTasks = useMemo(
     () => tasks.filter((task) => !task.isClosed),
@@ -71,9 +103,13 @@ function App() {
     <div className="app">
       <div className="app-grid">
         <header className="header">
-          <p className="workspace-label">Developing workspace</p>
-          <div className="header-image" role="img" aria-label="TV dashboard header image">
+          <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
             <img src={logo} alt="" />
+          </div>
+          <div className="header-time header-card" aria-live="polite">
+            <p className="time-label">Current time</p>
+            <p className="time-value">{currentTime}</p>
+            <p className="time-date">{currentDate}</p>
           </div>
         </header>
         <section className="metrics" aria-label="Key risk indicators">
