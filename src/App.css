@@ -275,7 +275,8 @@
   white-space: nowrap;
 }
 
-.support-table .assignee-column {
+.support-table .assignee-column,
+.support-table .project-column {
   white-space: nowrap;
   width: 1%;
 }
