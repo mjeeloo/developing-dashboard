@@ -16,6 +16,7 @@ const resolveApiBase = () => {
 };
 
 const REFRESH_INTERVAL_MS = 60_000;
+const PAGE_SIZE = 100;
 
 const CLOSED_STATUS_VALUES = new Set([
   'closed',
@@ -167,33 +168,53 @@ export function useClickUpTasks() {
       setError(null);
 
       try {
-        const searchParams = new URLSearchParams({
-          include_closed: 'true',
-          subtasks: 'true',
-          order_by: 'updated',
-        });
+        const collectedTasks = [];
+        let page = 0;
+        let reachedLastPage = false;
 
-        const response = await fetch(
-          `${config.apiBase}/list/${config.listId}/task?${searchParams.toString()}`,
-          {
-            headers: {
-              Authorization: config.token,
-              'Content-Type': 'application/json',
+        while (!reachedLastPage) {
+          const searchParams = new URLSearchParams({
+            include_closed: 'true',
+            subtasks: 'true',
+            order_by: 'updated',
+            page: String(page),
+            page_size: String(PAGE_SIZE),
+          });
+
+          const response = await fetch(
+            `${config.apiBase}/list/${config.listId}/task?${searchParams.toString()}`,
+            {
+              headers: {
+                Authorization: config.token,
+                'Content-Type': 'application/json',
+              },
+              signal: controller.signal,
             },
-            signal: controller.signal,
-          },
-        );
+          );
 
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(`ClickUp API error (${response.status}): ${text}`);
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`ClickUp API error (${response.status}): ${text}`);
+          }
+
+          const payload = await response.json();
+          if (!isMounted) {
+            return;
+          }
+
+          const pageTasks = Array.isArray(payload.tasks) ? payload.tasks : [];
+          collectedTasks.push(...pageTasks);
+
+          const lastPageFlag =
+            payload?.last_page === true ||
+            payload?.last_page === 'true' ||
+            payload?.last_page === 1;
+
+          reachedLastPage = lastPageFlag || pageTasks.length < PAGE_SIZE;
+          page += 1;
         }
 
-        const payload = await response.json();
-        if (!isMounted) {
-          return;
-        }
-        const normalizedTasks = (payload.tasks || []).map(mapTask);
+        const normalizedTasks = collectedTasks.map(mapTask);
         setTasks(normalizedTasks);
         setStatus('success');
         hasLoadedOnceRef.current = true;
