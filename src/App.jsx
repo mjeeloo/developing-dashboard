@@ -68,7 +68,7 @@ function App() {
       <div className="app-grid">
         <header className="header">
           <p className="workspace-label">Developing workspace</p>
-          <div className="header-image" role="img" aria-label="Support and Operations dashboard header placeholder">
+          <div className="header-image" role="img" aria-label="TV dashboard header image">
             <img src={logo} alt="" />
           </div>
         </header>
