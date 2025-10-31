@@ -301,6 +301,17 @@
   color: var(--text-secondary);
 }
 
+.assignee-task-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.assignee-task-heading .task-name {
+  flex: 1;
+}
+
 .task-meta {
   margin: 0.15rem 0 0;
   font-size: 0.85rem;
@@ -308,6 +319,43 @@
   display: flex;
   gap: 0.35rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.task-project,
+.task-deadline {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.task-details-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.priority-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.priority-flag-icon {
+  width: 0;
+  height: 0;
+  border-top: 0.35rem solid transparent;
+  border-bottom: 0.35rem solid transparent;
+  border-left: 0.55rem solid currentColor;
 }
 
 .task-tags {
@@ -323,6 +371,7 @@
   border-radius: 999px;
   background-color: rgba(var(--accent-secondary-rgb), 0.55);
   color: var(--text-primary);
+  border: 1px solid transparent;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;

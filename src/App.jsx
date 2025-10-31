@@ -20,6 +20,86 @@ const formatDate = (value) => {
   }).format(date);
 };
 
+const clampAlpha = (value) => {
+  if (Number.isNaN(value) || value < 0) {
+    return 0;
+  }
+  if (value > 1) {
+    return 1;
+  }
+  return value;
+};
+
+const withAlpha = (color, alpha = 0.2) => {
+  if (typeof color !== 'string' || color.length === 0) {
+    return null;
+  }
+
+  const normalized = color.trim();
+  if (!normalized.startsWith('#')) {
+    return normalized;
+  }
+
+  let hex = normalized.slice(1);
+  if (hex.length === 3) {
+    hex = hex
+      .split('')
+      .map((char) => `${char}${char}`)
+      .join('');
+  }
+
+  if (hex.length !== 6) {
+    return normalized;
+  }
+
+  const parsed = Number.parseInt(hex, 16);
+  if (Number.isNaN(parsed)) {
+    return normalized;
+  }
+
+  const r = (parsed >> 16) & 255;
+  const g = (parsed >> 8) & 255;
+  const b = parsed & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${clampAlpha(alpha)})`;
+};
+
+const getStatusStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.45) || color,
+    backgroundColor: withAlpha(color, 0.18) || color,
+  };
+};
+
+const getPriorityStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.35) || color,
+    backgroundColor: withAlpha(color, 0.16) || color,
+  };
+};
+
+const getTagStyles = (color) => {
+  if (!color) {
+    return {};
+  }
+
+  return {
+    color,
+    borderColor: withAlpha(color, 0.35) || color,
+    backgroundColor: withAlpha(color, 0.18) || color,
+  };
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
@@ -165,20 +245,22 @@ function App() {
                 </thead>
                 <tbody>
                   {supportTasks.map((task) => (
-                    <tr key={task.id}>
-                      <th scope="row">
-                        <span className="task-id">{task.id}</span>
-                        <span className="task-name">{task.name}</span>
-                      </th>
-                      <td>{task.assignee ?? 'Unassigned'}</td>
-                      <td>
-                        <span className="status-pill">{task.status}</span>
-                      </td>
-                      <td>{task.priority}</td>
-                      <td>{formatDate(task.dueDate)}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                  <tr key={task.id}>
+                    <th scope="row">
+                      <span className="task-id">{task.id}</span>
+                      <span className="task-name">{task.name}</span>
+                    </th>
+                    <td>{task.assignee ?? 'Unassigned'}</td>
+                    <td>
+                      <span className="status-pill" style={getStatusStyles(task.statusColor)}>
+                        {task.status}
+                      </span>
+                    </td>
+                    <td>{task.priority}</td>
+                    <td>{formatDate(task.dueDate)}</td>
+                  </tr>
+                ))}
+              </tbody>
               </table>
             </div>
           ) : null}
@@ -219,18 +301,40 @@ function App() {
                   <ul>
                     {ownedTasks.map((task) => (
                       <li key={task.id}>
-                        <div>
+                        <div className="assignee-task-heading">
                           <p className="task-name">{task.name}</p>
-                          <p className="task-meta">
-                            <span>{task.id}</span>
-                            <span aria-hidden="true">•</span>
-                            <span>{task.status}</span>
-                          </p>
+                          <span className="status-pill" style={getStatusStyles(task.statusColor)}>
+                            {task.status}
+                          </span>
+                        </div>
+                        <p className="task-meta">
+                          <span>{task.id}</span>
+                          {task.projectName ? (
+                            <>
+                              <span aria-hidden="true">•</span>
+                              <span className="task-project">{task.projectName}</span>
+                            </>
+                          ) : null}
+                          {task.deadline ? (
+                            <>
+                              <span aria-hidden="true">•</span>
+                              <span className="task-deadline">Deadline {formatDate(task.deadline)}</span>
+                            </>
+                          ) : null}
+                        </p>
+                        <div className="task-details-row">
+                          <span className="priority-flag" style={getPriorityStyles(task.priorityColor)}>
+                            <span className="priority-flag-icon" aria-hidden="true" />
+                            <span className="priority-label">{task.priority}</span>
+                          </span>
                         </div>
                         <div className="task-tags">
-                          {task.tags.map((tag) => (
-                            <span className="tag" key={tag}>
-                              {tag}
+                          {(task.tagDetails && task.tagDetails.length > 0
+                            ? task.tagDetails
+                            : task.tags.map((tag) => ({ name: tag, color: null }))
+                          ).map((tag) => (
+                            <span className="tag" key={tag.name} style={getTagStyles(tag.color)}>
+                              {tag.name}
                             </span>
                           ))}
                         </div>
