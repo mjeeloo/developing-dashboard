@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import './App.css';
-import headerPlaceholder from './assets/header-placeholder.svg';
+import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
 const MetricCard = ({ title, value, subtitle }) => (
@@ -68,7 +68,7 @@ function App() {
       <header className="header">
         <p className="workspace-label">Developing workspace</p>
         <div className="header-image" role="img" aria-label="Support and Operations dashboard header placeholder">
-          <img src={headerPlaceholder} alt="" />
+          <img src={logo} alt="" />
         </div>
       </header>
 
