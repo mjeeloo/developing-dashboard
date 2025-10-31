@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
-const MetricCard = ({ title, value, subtitle }) => (
+const ALARM_AUDIO_PATH = '/assets/alarm.wav';
+
+const MetricCard = ({ title, value, subtitle, valueClassName }) => (
   <article className="metric-card">
     <h3>{title}</h3>
-    <p className="metric-value">{value}</p>
+    <p className={['metric-value', valueClassName].filter(Boolean).join(' ')}>{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
   </article>
 );
@@ -23,6 +25,8 @@ const formatDate = (value) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
+  const alarmRef = useRef(null);
+  const previousUrgentCountRef = useRef(null);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -80,6 +84,34 @@ function App() {
     [activeTasks],
   );
 
+  useEffect(() => {
+    const audio = new Audio(ALARM_AUDIO_PATH);
+    audio.preload = 'auto';
+    alarmRef.current = audio;
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'success') {
+      return;
+    }
+
+    const previousUrgentCount = previousUrgentCountRef.current;
+    if (previousUrgentCount !== null && urgentCount > previousUrgentCount) {
+      const alarm = alarmRef.current;
+      if (alarm) {
+        alarm.currentTime = 0;
+        const playPromise = alarm.play();
+        if (playPromise instanceof Promise) {
+          playPromise.catch(() => {
+            /* Intentionally ignore playback errors (e.g., autoplay restrictions). */
+          });
+        }
+      }
+    }
+
+    previousUrgentCountRef.current = urgentCount;
+  }, [status, urgentCount]);
+
   const assignedTasks = useMemo(
     () =>
       activeTasks.filter((task) => {
@@ -126,6 +158,7 @@ function App() {
           <MetricCard
             title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
+            valueClassName={status === 'success' && urgentCount > 0 ? 'metric-value--alert' : ''}
             subtitle='Priority set to "Urgent"'
           />
         </section>
