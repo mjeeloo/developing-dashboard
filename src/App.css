@@ -276,8 +276,8 @@
 }
 
 .support-table .assignee-column {
-  min-width: clamp(11rem, 14vw, 16rem);
   white-space: nowrap;
+  width: 1%;
 }
 
 .chip {
