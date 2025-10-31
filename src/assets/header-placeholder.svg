@@ -1,0 +1,7 @@
+<svg width="584.65" height="117.517" viewBox="0 0 584.65 117.517" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M72.325 58.7585C72.325 45.3794 83.1667 34.5378 96.5458 34.5378C109.925 34.5378 120.767 45.3794 120.767 58.7585C120.767 72.1376 109.925 82.9792 96.5458 82.9792C83.1667 82.9792 72.325 72.1376 72.325 58.7585Z" fill="#CBD5F5"/>
+  <path d="M260.162 58.7585H180.404" stroke="#CBD5F5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M404.246 58.7585H324.488" stroke="#CBD5F5" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 18"/>
+  <path d="M528.65 58.7585H448.892" stroke="#CBD5F5" stroke-width="6" stroke-linecap="round"/>
+  <text x="292.325" y="68" text-anchor="middle" font-family="'Inter', sans-serif" font-size="18" fill="#64748B">Header Image Placeholder</text>
+</svg>
