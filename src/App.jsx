@@ -307,36 +307,39 @@ function App() {
                             {task.status}
                           </span>
                         </div>
-                        <p className="task-meta">
-                          <span>{task.id}</span>
-                          {task.projectName ? (
-                            <>
-                              <span aria-hidden="true">•</span>
-                              <span className="task-project">{task.projectName}</span>
-                            </>
-                          ) : null}
-                          {task.deadline ? (
-                            <>
-                              <span aria-hidden="true">•</span>
-                              <span className="task-deadline">Deadline {formatDate(task.deadline)}</span>
-                            </>
-                          ) : null}
-                        </p>
-                        <div className="task-details-row">
-                          <span className="priority-flag" style={getPriorityStyles(task.priorityColor)}>
-                            <span className="priority-flag-icon" aria-hidden="true" />
-                            <span className="priority-label">{task.priority}</span>
+                        <div className="task-meta-row">
+                          <span
+                            className="priority-chip"
+                            style={getPriorityStyles(task.priorityColor)}
+                            title={`${task.priority} priority`}
+                          >
+                            <svg
+                              className="priority-flag-icon"
+                              viewBox="0 0 16 16"
+                              role="img"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                            <span className="sr-only">{`${task.priority} priority`}</span>
                           </span>
-                        </div>
-                        <div className="task-tags">
                           {(task.tagDetails && task.tagDetails.length > 0
                             ? task.tagDetails
                             : task.tags.map((tag) => ({ name: tag, color: null }))
                           ).map((tag) => (
-                            <span className="tag" key={tag.name} style={getTagStyles(tag.color)}>
+                            <span className="tag-pill" key={tag.name} style={getTagStyles(tag.color)}>
                               {tag.name}
                             </span>
                           ))}
+                          {task.projectName ? (
+                            <span className="meta-pill task-project">{task.projectName}</span>
+                          ) : null}
+                          {task.deadline ? (
+                            <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
+                          ) : null}
                         </div>
                       </li>
                     ))}
