@@ -29,9 +29,6 @@
   width: min(100%, 36.54rem);
   border-radius: 1.125rem;
   overflow: hidden;
-  background: linear-gradient(135deg, #e2e8f0, #cbd5f5);
-  padding: clamp(0.75rem, 2vw, 1.25rem);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
 }
 
 .header-image img {
