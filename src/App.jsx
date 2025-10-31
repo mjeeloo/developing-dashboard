@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import './App.css';
+import headerPlaceholder from './assets/header-placeholder.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
 const MetricCard = ({ title, value, subtitle }) => (
@@ -65,14 +66,10 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <div>
-          <p className="workspace-label">Developing workspace</p>
-          <h1>Support &amp; Operations Dashboard</h1>
+        <p className="workspace-label">Developing workspace</p>
+        <div className="header-image" role="img" aria-label="Support and Operations dashboard header placeholder">
+          <img src={headerPlaceholder} alt="" />
         </div>
-        <p className="header-subtitle">
-          Snapshot of ClickUp tasks that require customer-facing follow-up and operational risk
-          mitigation.
-        </p>
       </header>
 
       <section className="metrics" aria-label="Key risk indicators">
