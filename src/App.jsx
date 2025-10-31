@@ -306,7 +306,7 @@ function App() {
                       const statusLabel = normalizedStatus ? normalizedStatus.toUpperCase() : '';
 
                       return (
-                        <li key={task.id}>
+                        <li key={task.id} className="assignee-task-card">
                           <div className="assignee-task-heading">
                             <p className="task-name">{task.name}</p>
                           </div>

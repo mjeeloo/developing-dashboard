@@ -295,22 +295,23 @@
   list-style: none;
   display: flex;
   flex-direction: column;
+  gap: 0.85rem;
 }
 
-.assignee-card li {
+.assignee-task-card {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
   color: var(--text-secondary);
-  padding: 0.85rem 0;
-}
-
-.assignee-card li:first-child {
-  padding-top: 0;
-}
-
-.assignee-card li + li {
-  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.1rem;
+  background: linear-gradient(
+      135deg,
+      rgba(var(--accent-secondary-rgb), 0.16),
+      rgba(var(--accent-rgb), 0.08)
+    );
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border-radius: 1rem;
+  box-shadow: 0 14px 38px rgba(5, 10, 24, 0.45);
 }
 
 .assignee-task-heading {
