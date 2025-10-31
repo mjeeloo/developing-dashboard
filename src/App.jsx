@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
-const MetricCard = ({ title, value, subtitle }) => (
-  <article className="metric-card">
+const ALARM_AUDIO_PATH = '/assets/alarm.wav';
+
+const MetricCard = ({ title, value, subtitle, valueClassName, className }) => (
+  <article className={["metric-card", className].filter(Boolean).join(' ')}>
     <h3>{title}</h3>
-    <p className="metric-value">{value}</p>
+    <p className={['metric-value', valueClassName].filter(Boolean).join(' ')}>{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
   </article>
 );
@@ -23,6 +25,8 @@ const formatDate = (value) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
+  const alarmRef = useRef(null);
+  const previousUrgentCountRef = useRef(null);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -80,6 +84,55 @@ function App() {
     [activeTasks],
   );
 
+  useEffect(() => {
+    const audio = new Audio();
+    audio.src = ALARM_AUDIO_PATH;
+    audio.preload = 'auto';
+    audio.load();
+    alarmRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      alarmRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'success') {
+      return;
+    }
+
+    const previousUrgentCount = previousUrgentCountRef.current;
+    if (previousUrgentCount !== null && urgentCount > previousUrgentCount) {
+      const alarm = alarmRef.current;
+      if (alarm) {
+        const playAlarm = () => {
+          alarm.currentTime = 0;
+          const playPromise = alarm.play();
+          if (playPromise instanceof Promise) {
+            playPromise.catch(() => {
+              /* Intentionally ignore playback errors (e.g., autoplay restrictions). */
+            });
+          }
+        };
+
+        if (alarm.readyState >= (HTMLMediaElement?.HAVE_ENOUGH_DATA ?? 4)) {
+          playAlarm();
+        } else {
+          const handleCanPlay = () => {
+            playAlarm();
+          };
+
+          alarm.addEventListener('canplaythrough', handleCanPlay, { once: true });
+          alarm.load();
+        }
+      }
+    }
+
+    previousUrgentCountRef.current = urgentCount;
+  }, [status, urgentCount]);
+
   const assignedTasks = useMemo(
     () =>
       activeTasks.filter((task) => {
@@ -126,6 +179,8 @@ function App() {
           <MetricCard
             title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
+            className={status === 'success' && urgentCount > 0 ? 'metric-card--alert' : ''}
+            valueClassName={status === 'success' && urgentCount > 0 ? 'metric-value--alert' : ''}
             subtitle='Priority set to "Urgent"'
           />
         </section>
