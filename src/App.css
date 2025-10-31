@@ -1,5 +1,5 @@
 .app {
-  padding: 2.5rem clamp(1.5rem, 3vw, 4rem) 3rem;
+  padding: 2rem clamp(1.1rem, 2.4vw, 3.25rem) 2.5rem;
   width: 100%;
   margin: 0;
   background: var(--background);
