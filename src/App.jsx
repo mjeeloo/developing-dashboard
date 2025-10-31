@@ -22,33 +22,37 @@ const formatDate = (value) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
 
-  const supportTasks = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Support')),
+  const activeTasks = useMemo(
+    () => tasks.filter((task) => !task.isClosed),
     [tasks],
+  );
+
+  const supportTasks = useMemo(
+    () => activeTasks.filter((task) => task.tags.includes('Support')),
+    [activeTasks],
   );
 
   const vulnerabilityCount = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Vulnerability')).length,
-    [tasks],
+    () => activeTasks.filter((task) => task.tags.includes('Vulnerability')).length,
+    [activeTasks],
   );
 
   const downtimeCount = useMemo(
-    () => tasks.filter((task) => task.tags.includes('Downtime')).length,
-    [tasks],
+    () => activeTasks.filter((task) => task.tags.includes('Downtime')).length,
+    [activeTasks],
   );
 
   const urgentCount = useMemo(
-    () => tasks.filter((task) => task.priority.toLowerCase() === 'urgent').length,
-    [tasks],
+    () => activeTasks.filter((task) => task.priority.toLowerCase() === 'urgent').length,
+    [activeTasks],
   );
 
   const assignedTasks = useMemo(
     () =>
-      tasks.filter((task) => {
-        const statusType = typeof task.statusType === 'string' ? task.statusType.toLowerCase() : '';
-        return Boolean(task.assignee) && statusType !== 'closed';
+      activeTasks.filter((task) => {
+        return Boolean(task.assignee);
       }),
-    [tasks],
+    [activeTasks],
   );
 
   const tasksByAssignee = useMemo(() => {

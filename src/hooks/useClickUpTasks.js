@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
@@ -14,6 +14,16 @@ const resolveApiBase = () => {
 
   return CLICKUP_API_BASE;
 };
+
+const REFRESH_INTERVAL_MS = 60_000;
+
+const CLOSED_STATUS_VALUES = new Set([
+  'closed',
+  'done',
+  'completed',
+  'complete',
+  'resolved',
+]);
 
 const normalizeCustomFieldOptions = (field) => {
   const options = field?.type_config?.options;
@@ -89,12 +99,20 @@ const mapTask = (task) => {
     .map((assignee) => assignee.username || assignee.email || assignee.id)
     .filter(Boolean);
   const dueDate = task.due_date && task.due_date !== '0' ? Number(task.due_date) : null;
+  const statusName = typeof task.status?.status === 'string' ? task.status.status.toLowerCase() : null;
+  const statusTypeRaw = typeof task.status?.type === 'string' ? task.status.type.toLowerCase() : null;
+  const normalizedStatusType = statusTypeRaw === 'done' ? 'closed' : statusTypeRaw;
+  const isClosed = Boolean(
+    (statusName && CLOSED_STATUS_VALUES.has(statusName)) ||
+      (normalizedStatusType && CLOSED_STATUS_VALUES.has(normalizedStatusType)),
+  );
 
   return {
     id: task.custom_id || task.id,
     name: task.name,
     status: task.status?.status || task.status?.type || 'Unknown',
-    statusType: task.status?.type || null,
+    statusType: normalizedStatusType,
+    isClosed,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
@@ -107,6 +125,8 @@ export function useClickUpTasks() {
   const [tasks, setTasks] = useState([]);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
+  const controllerRef = useRef(null);
+  const hasLoadedOnceRef = useRef(false);
 
   const config = useMemo(() => {
     return {
@@ -127,17 +147,30 @@ export function useClickUpTasks() {
       return;
     }
 
-    const controller = new AbortController();
+    let isMounted = true;
 
-    async function fetchTasks() {
-      setStatus('loading');
+    const fetchTasks = async () => {
+      if (!isMounted) {
+        return;
+      }
+
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
+      if (!hasLoadedOnceRef.current) {
+        setStatus('loading');
+      }
       setError(null);
 
       try {
         const searchParams = new URLSearchParams({
           include_closed: 'true',
           subtasks: 'true',
-          order_by: 'created',
+          order_by: 'updated',
         });
 
         const response = await fetch(
@@ -157,24 +190,36 @@ export function useClickUpTasks() {
         }
 
         const payload = await response.json();
+        if (!isMounted) {
+          return;
+        }
         const normalizedTasks = (payload.tasks || []).map(mapTask);
         setTasks(normalizedTasks);
         setStatus('success');
+        hasLoadedOnceRef.current = true;
       } catch (err) {
         if (err.name === 'AbortError') {
+          return;
+        }
+        if (!isMounted) {
           return;
         }
         setStatus('error');
         setError(err);
       }
-    }
+    };
 
     fetchTasks();
+    const intervalId = window.setInterval(fetchTasks, REFRESH_INTERVAL_MS);
 
     return () => {
-      controller.abort();
+      isMounted = false;
+      window.clearInterval(intervalId);
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
     };
-  }, [config.listId, config.token]);
+  }, [config.apiBase, config.listId, config.token]);
 
   return { tasks, status, error };
 }
