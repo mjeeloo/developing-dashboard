@@ -287,6 +287,26 @@ const mapTask = (task, options = {}) => {
     (statusName && CLOSED_STATUS_VALUES.has(statusName)) ||
       (normalizedStatusType && CLOSED_STATUS_VALUES.has(normalizedStatusType)),
   );
+  const statusLabel = task.status?.status || task.status?.type || 'Unknown';
+
+  let priorityLabel = 'None';
+  let priorityColor = null;
+  const rawPriority = task.priority;
+
+  if (typeof rawPriority === 'string') {
+    priorityLabel = rawPriority;
+  } else if (rawPriority && typeof rawPriority === 'object') {
+    priorityLabel =
+      rawPriority.priority ||
+      rawPriority.label ||
+      rawPriority.value ||
+      rawPriority.name ||
+      rawPriority.id ||
+      priorityLabel;
+    priorityColor = rawPriority.color || null;
+  }
+
+  priorityLabel = priorityLabel || 'None';
 
   const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
   const projectField = findCustomField(customFields, {
@@ -301,12 +321,14 @@ const mapTask = (task, options = {}) => {
   return {
     id: task.custom_id || task.id,
     name: task.name,
-    status: task.status?.status || task.status?.type || 'Unknown',
+    status: statusLabel,
+    statusColor: task.status?.color || null,
     statusType: normalizedStatusType,
     isClosed,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-    priority: task.priority?.priority || 'None',
+    priority: priorityLabel,
+    priorityColor,
     tags: extractTagsFromCustomField(task, options),
     project: mapRelationshipFieldValue(projectField),
     deadline: mapDateFieldValue(deadlineField),

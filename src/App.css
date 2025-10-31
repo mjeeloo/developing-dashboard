@@ -227,10 +227,12 @@
 
 .support-table thead th:first-child {
   border-top-left-radius: 1rem;
+  padding-left: 1.25rem;
 }
 
 .support-table thead th:last-child {
   border-top-right-radius: 1rem;
+  padding-right: 1.25rem;
 }
 
 .support-table tbody tr:last-of-type th {
@@ -246,6 +248,14 @@
   border-bottom-right-radius: 1rem;
 }
 
+.support-table tbody th {
+  padding-left: 1.25rem;
+}
+
+.support-table tbody td:last-of-type {
+  padding-right: 1.25rem;
+}
+
 .support-table tbody tr:hover {
   background: rgba(var(--accent-rgb), 0.08);
 }
@@ -254,6 +264,55 @@
   margin: 0;
   color: var(--text-primary);
   font-weight: 500;
+}
+
+.task-cell {
+  padding-right: 1rem;
+}
+
+.status-cell,
+.priority-cell {
+  white-space: nowrap;
+}
+
+.chip {
+  --chip-bg: rgba(var(--accent-secondary-rgb), 0.35);
+  --chip-border: rgba(var(--accent-secondary-rgb), 0.45);
+  --chip-accent: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--text-primary);
+}
+
+.chip-flag {
+  color: var(--chip-accent);
+  font-size: 0.95em;
+}
+
+.chip-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--chip-accent);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+  flex-shrink: 0;
+}
+
+.chip-label {
+  text-transform: none;
+}
+
+.chip-priority .chip-label {
+  text-transform: capitalize;
 }
 
 .assignee-grid {
