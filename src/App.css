@@ -194,6 +194,7 @@
   display: grid;
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  align-items: start;
 }
 
 .assignee-card {
@@ -204,6 +205,7 @@
   flex-direction: column;
   gap: 0.75rem;
   background: linear-gradient(180deg, #ffffff, #f8fbff);
+  align-self: start;
 }
 
 .assignee-card header {
