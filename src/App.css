@@ -172,7 +172,12 @@
 }
 
 .table-wrapper {
+  overflow: hidden;
   overflow-x: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  background: var(--panel-color);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .status-message {
@@ -194,7 +199,8 @@
 
 .support-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 640px;
   color: var(--text-primary);
 }
@@ -219,14 +225,39 @@
   background: rgba(var(--accent-secondary-rgb), 0.35);
 }
 
-.support-table tbody tr:hover {
-  background: rgba(var(--accent-rgb), 0.08);
+.support-table thead th:first-child {
+  border-top-left-radius: 1rem;
+  padding-left: 1.25rem;
 }
 
-.task-id {
-  display: block;
-  font-weight: 600;
-  color: var(--text-primary);
+.support-table thead th:last-child {
+  border-top-right-radius: 1rem;
+  padding-right: 1.25rem;
+}
+
+.support-table tbody tr:last-of-type th {
+  border-bottom-left-radius: 1rem;
+  border-bottom: none;
+}
+
+.support-table tbody tr:last-of-type td {
+  border-bottom: none;
+}
+
+.support-table tbody tr:last-of-type td:last-of-type {
+  border-bottom-right-radius: 1rem;
+}
+
+.support-table tbody th {
+  padding-left: 1.25rem;
+}
+
+.support-table tbody td:last-of-type {
+  padding-right: 1.25rem;
+}
+
+.support-table tbody tr:hover {
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .task-name {
@@ -235,21 +266,59 @@
   font-weight: 500;
 }
 
-.status-pill {
+.task-cell {
+  padding-right: 1rem;
+}
+
+.status-cell,
+.priority-cell {
+  white-space: nowrap;
+}
+
+.support-table .assignee-column,
+.support-table .project-column {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.chip {
+  --chip-bg: rgba(var(--accent-secondary-rgb), 0.35);
+  --chip-border: rgba(var(--accent-secondary-rgb), 0.45);
+  --chip-accent: var(--accent);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 1.9rem;
-  padding: 0.35rem 0.65rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  background: rgba(var(--accent-rgb), 0.18);
-  color: var(--accent);
+  font-size: 0.8rem;
   font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--text-primary);
+}
+
+.chip-flag {
+  color: var(--chip-accent);
+  font-size: 0.95em;
+}
+
+.chip-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--chip-accent);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+  flex-shrink: 0;
+}
+
+.chip-label {
+  text-transform: none;
+}
+
+.chip-priority .chip-label {
+  text-transform: capitalize;
 }
 
 .assignee-grid {
