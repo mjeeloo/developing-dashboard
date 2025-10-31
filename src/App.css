@@ -116,9 +116,8 @@
 }
 
 .metric-card--alert {
-  animation: urgent-card-flash 0.9s ease-in-out infinite alternate;
-  border-color: rgba(248, 113, 113, 0.8);
-  box-shadow: 0 26px 48px rgba(248, 113, 113, 0.45);
+  animation: urgent-card-flash 1s ease-in-out infinite alternate;
+  animation-fill-mode: both;
 }
 
 .metric-card h3 {
@@ -137,8 +136,8 @@
 
 .metric-value--alert {
   color: #f87171;
-  animation: urgent-value-flash 0.9s ease-in-out infinite alternate;
-  text-shadow: 0 0 12px rgba(248, 113, 113, 0.65);
+  animation: urgent-value-flash 1s ease-in-out infinite alternate;
+  animation-fill-mode: both;
 }
 
 @keyframes urgent-card-flash {
@@ -148,22 +147,26 @@
       rgba(30, 41, 59, 0.88),
       rgba(var(--accent-secondary-rgb), 0.7)
     );
+    border-color: rgba(248, 113, 113, 0.4);
+    box-shadow: 0 22px 44px rgba(248, 113, 113, 0.25);
   }
 
   to {
     background: linear-gradient(135deg, rgba(127, 29, 29, 0.88), rgba(220, 38, 38, 0.95));
+    border-color: rgba(248, 113, 113, 0.85);
+    box-shadow: 0 32px 64px rgba(248, 113, 113, 0.5);
   }
 }
 
 @keyframes urgent-value-flash {
   from {
-    color: #f87171;
-    text-shadow: 0 0 6px rgba(248, 113, 113, 0.45);
+    color: #fca5a5;
+    text-shadow: 0 0 6px rgba(248, 113, 113, 0.35);
   }
 
   to {
     color: #ef4444;
-    text-shadow: 0 0 16px rgba(239, 68, 68, 0.85);
+    text-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
   }
 }
 

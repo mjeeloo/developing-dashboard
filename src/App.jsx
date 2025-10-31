@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
-
-const ALARM_AUDIO_PATH = '/assets/alarm.wav';
 
 const MetricCard = ({ title, value, subtitle, valueClassName, className }) => (
   <article className={["metric-card", className].filter(Boolean).join(' ')}>
@@ -25,9 +23,6 @@ const formatDate = (value) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
-  const alarmRef = useRef(null);
-  const previousUrgentCountRef = useRef(null);
-
   useEffect(() => {
     const interval = window.setInterval(() => {
       setNow(new Date());
@@ -83,55 +78,6 @@ function App() {
     () => activeTasks.filter((task) => task.priority.toLowerCase() === 'urgent').length,
     [activeTasks],
   );
-
-  useEffect(() => {
-    const audio = new Audio();
-    audio.src = ALARM_AUDIO_PATH;
-    audio.preload = 'auto';
-    audio.load();
-    alarmRef.current = audio;
-
-    return () => {
-      audio.pause();
-      audio.src = '';
-      alarmRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (status !== 'success') {
-      return;
-    }
-
-    const previousUrgentCount = previousUrgentCountRef.current;
-    if (previousUrgentCount !== null && urgentCount > previousUrgentCount) {
-      const alarm = alarmRef.current;
-      if (alarm) {
-        const playAlarm = () => {
-          alarm.currentTime = 0;
-          const playPromise = alarm.play();
-          if (playPromise instanceof Promise) {
-            playPromise.catch(() => {
-              /* Intentionally ignore playback errors (e.g., autoplay restrictions). */
-            });
-          }
-        };
-
-        if (alarm.readyState >= (HTMLMediaElement?.HAVE_ENOUGH_DATA ?? 4)) {
-          playAlarm();
-        } else {
-          const handleCanPlay = () => {
-            playAlarm();
-          };
-
-          alarm.addEventListener('canplaythrough', handleCanPlay, { once: true });
-          alarm.load();
-        }
-      }
-    }
-
-    previousUrgentCountRef.current = urgentCount;
-  }, [status, urgentCount]);
 
   const assignedTasks = useMemo(
     () =>
