@@ -3,6 +3,8 @@ import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
+const MetricCard = ({ title, value, subtitle, valueClassName, className }) => (
+  <article className={["metric-card", className].filter(Boolean).join(' ')}>
 const PLACEHOLDER = '—';
 
 const capitalizeWords = (value) => {
@@ -160,7 +162,7 @@ const StatusBadge = ({ status, color, isClosed }) => {
 const MetricCard = ({ title, value, subtitle }) => (
   <article className="metric-card">
     <h3>{title}</h3>
-    <p className="metric-value">{value}</p>
+    <p className={['metric-value', valueClassName].filter(Boolean).join(' ')}>{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
   </article>
 );
@@ -268,7 +270,6 @@ const getTagStyles = (color) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
-
   useEffect(() => {
     const interval = window.setInterval(() => {
       setNow(new Date());
@@ -371,6 +372,8 @@ function App() {
           <MetricCard
             title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
+            className={status === 'success' && urgentCount > 0 ? 'metric-card--alert' : ''}
+            valueClassName={status === 'success' && urgentCount > 0 ? 'metric-value--alert' : ''}
             subtitle='Priority set to "Urgent"'
           />
         </section>
