@@ -315,7 +315,7 @@ function App() {
                   <tr>
                     <th scope="col">Task</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Assignee</th>
+                    <th scope="col" className="assignee-column">Assignee</th>
                     <th scope="col">Project</th>
                     <th scope="col">Priority</th>
                     <th scope="col">Deadline</th>
@@ -330,7 +330,7 @@ function App() {
                       <td className="status-cell">
                         <StatusBadge status={task.status} color={task.statusColor} isClosed={task.isClosed} />
                       </td>
-                      <td>{task.assignee ?? PLACEHOLDER}</td>
+                      <td className="assignee-column">{task.assignee ?? PLACEHOLDER}</td>
                       <td>{task.project ?? PLACEHOLDER}</td>
                       <td className="priority-cell">
                         <PriorityBadge priority={task.priority} color={task.priorityColor} />

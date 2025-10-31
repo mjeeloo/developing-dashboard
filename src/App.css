@@ -275,6 +275,11 @@
   white-space: nowrap;
 }
 
+.support-table .assignee-column {
+  min-width: clamp(11rem, 14vw, 16rem);
+  white-space: nowrap;
+}
+
 .chip {
   --chip-bg: rgba(var(--accent-secondary-rgb), 0.35);
   --chip-border: rgba(var(--accent-secondary-rgb), 0.45);
