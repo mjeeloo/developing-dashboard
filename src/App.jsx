@@ -114,7 +114,7 @@ function App() {
         </header>
         <section className="metrics" aria-label="Key risk indicators">
           <MetricCard
-            title="Vulnerability tasks"
+            title="Vulnerabilities"
             value={status === 'success' ? vulnerabilityCount : '—'}
             subtitle='Tagged with "Vulnerability"'
           />
@@ -124,16 +124,16 @@ function App() {
             subtitle='Tagged with "Downtime"'
           />
           <MetricCard
-            title="Urgent priority"
+            title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
-            subtitle="Priority marked Urgent"
+            subtitle='Priority set to "Urgent"'
           />
         </section>
 
         <section className="panel support-panel" aria-labelledby="support-tasks-heading">
         <div className="panel-header">
-          <h2 id="support-tasks-heading">Support tag focus</h2>
-          <p className="panel-subtitle">All tasks labeled with the Support tag</p>
+          <h2 id="support-tasks-heading">Support tasks</h2>
+          <p className="panel-subtitle">All tasks labeled with the "Support" tag</p>
         </div>
         <div className="panel-body">
           {status === 'loading' ? (
@@ -148,7 +148,7 @@ function App() {
           ) : null}
           {status === 'success' && supportTasks.length === 0 ? (
             <p className="status-message" role="status">
-              No tasks with the Support tag are currently open.
+              No tasks with the 'Support' tag are currently open.
             </p>
           ) : null}
           {supportTasks.length > 0 ? (
@@ -187,9 +187,9 @@ function App() {
 
         <section className="panel assignee-panel" aria-labelledby="assignee-heading">
         <div className="panel-header">
-          <h2 id="assignee-heading">Workload by assignee</h2>
+          <h2 id="assignee-heading">Tasks by assignee</h2>
           <p className="panel-subtitle">
-            Grouped overview to see who owns which follow-ups across support and operations.
+            Overview of all tasks by assignee
           </p>
         </div>
         <div className="panel-body">
