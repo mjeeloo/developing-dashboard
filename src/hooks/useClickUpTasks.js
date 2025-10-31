@@ -129,6 +129,152 @@ const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
   return mappedValue ? [mappedValue] : [];
 };
 
+const DEFAULT_CUSTOM_FIELD_IDS = {
+  project: 'a8807a9a-5de6-4cbb-9213-17071a2962b3',
+  deadline: 'de549afd-be31-445f-8d21-6ab7c794ea08',
+};
+
+const findCustomField = (customFields, { id, name }) => {
+  if (!Array.isArray(customFields)) {
+    return null;
+  }
+
+  const normalizedId = typeof id === 'string' ? id.trim() : '';
+  const normalizedName = normalizeString(name);
+
+  return (
+    customFields.find((field) => {
+      if (!field) {
+        return false;
+      }
+
+      const fieldId = field.id || field.uuid;
+      if (normalizedId && fieldId === normalizedId) {
+        return true;
+      }
+
+      if (!normalizedName) {
+        return false;
+      }
+
+      const fieldName = normalizeString(field.name || field.label);
+      return fieldName === normalizedName;
+    }) || null
+  );
+};
+
+const mapRelationshipFieldValue = (field) => {
+  if (!field) {
+    return null;
+  }
+
+  const mapEntry = (entry) => {
+    if (!entry) {
+      return null;
+    }
+
+    if (typeof entry === 'string') {
+      return entry;
+    }
+
+    if (typeof entry === 'object') {
+      return entry.name || entry.label || entry.value || entry.id || null;
+    }
+
+    return null;
+  };
+
+  const { value } = field;
+  if (Array.isArray(value)) {
+    const mapped = value.map(mapEntry).filter(Boolean);
+    return mapped.length > 0 ? mapped.join(', ') : null;
+  }
+
+  return mapEntry(value);
+};
+
+const normalizeDateValue = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const parseTimestamp = (input) => {
+    if (input == null) {
+      return null;
+    }
+
+    if (typeof input === 'number') {
+      if (!Number.isFinite(input)) {
+        return null;
+      }
+      return new Date(input).toISOString();
+    }
+
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      if (!trimmed) {
+        return null;
+      }
+
+      if (/^-?\d+$/.test(trimmed)) {
+        const numeric = Number(trimmed);
+        if (Number.isFinite(numeric)) {
+          return new Date(numeric).toISOString();
+        }
+      }
+
+      const parsed = Date.parse(trimmed);
+      if (!Number.isNaN(parsed)) {
+        return new Date(parsed).toISOString();
+      }
+    }
+
+    return null;
+  };
+
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const normalized = normalizeDateValue(entry);
+      if (normalized) {
+        return normalized;
+      }
+    }
+    return null;
+  }
+
+  if (typeof value === 'object') {
+    const candidateKeys = ['start', 'start_date', 'date', 'due_date', 'end', 'end_date', 'value'];
+
+    for (const key of candidateKeys) {
+      if (!(key in value)) {
+        continue;
+      }
+
+      const candidate = value[key];
+      if (candidate === value) {
+        continue;
+      }
+
+      const normalized = normalizeDateValue(candidate);
+      if (normalized) {
+        return normalized;
+      }
+    }
+
+    return null;
+  }
+
+  return parseTimestamp(value);
+};
+
+const mapDateFieldValue = (field) => {
+  if (!field) {
+    return null;
+  }
+
+  return normalizeDateValue(field.value);
+};
+
 const mapTask = (task, options = {}) => {
   const assigneeNames = (task.assignees || [])
     .map((assignee) => assignee.username || assignee.email || assignee.id)
@@ -142,6 +288,16 @@ const mapTask = (task, options = {}) => {
       (normalizedStatusType && CLOSED_STATUS_VALUES.has(normalizedStatusType)),
   );
 
+  const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
+  const projectField = findCustomField(customFields, {
+    id: options.projectFieldId || DEFAULT_CUSTOM_FIELD_IDS.project,
+    name: 'project',
+  });
+  const deadlineField = findCustomField(customFields, {
+    id: options.deadlineFieldId || DEFAULT_CUSTOM_FIELD_IDS.deadline,
+    name: 'deadline',
+  });
+
   return {
     id: task.custom_id || task.id,
     name: task.name,
@@ -152,6 +308,8 @@ const mapTask = (task, options = {}) => {
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
     tags: extractTagsFromCustomField(task, options),
+    project: mapRelationshipFieldValue(projectField),
+    deadline: mapDateFieldValue(deadlineField),
     url: task.url,
   };
 };
@@ -169,6 +327,8 @@ export function useClickUpTasks() {
       listId: import.meta.env.VITE_CLICKUP_LIST_ID,
       apiBase: resolveApiBase(),
       tagsFieldId: import.meta.env.VITE_CLICKUP_TAGS_FIELD_ID,
+      projectFieldId: import.meta.env.VITE_CLICKUP_PROJECT_FIELD_ID,
+      deadlineFieldId: import.meta.env.VITE_CLICKUP_DEADLINE_FIELD_ID,
     };
   }, []);
 

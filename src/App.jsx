@@ -11,8 +11,8 @@ const MetricCard = ({ title, value, subtitle }) => (
   </article>
 );
 
-const formatDate = (value) => {
-  if (!value) return 'No due date';
+const formatDeadline = (value) => {
+  if (!value) return 'No deadline';
   const date = new Date(value);
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -157,25 +157,22 @@ function App() {
                 <thead>
                   <tr>
                     <th scope="col">Task</th>
-                    <th scope="col">Owner</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Assignee</th>
+                    <th scope="col">Project</th>
                     <th scope="col">Priority</th>
-                    <th scope="col">Due</th>
+                    <th scope="col">Deadline</th>
                   </tr>
                 </thead>
                 <tbody>
                   {supportTasks.map((task) => (
                     <tr key={task.id}>
                       <th scope="row">
-                        <span className="task-id">{task.id}</span>
                         <span className="task-name">{task.name}</span>
                       </th>
                       <td>{task.assignee ?? 'Unassigned'}</td>
-                      <td>
-                        <span className="status-pill">{task.status}</span>
-                      </td>
+                      <td>{task.project ?? '—'}</td>
                       <td>{task.priority}</td>
-                      <td>{formatDate(task.dueDate)}</td>
+                      <td>{formatDeadline(task.deadline)}</td>
                     </tr>
                   ))}
                 </tbody>
