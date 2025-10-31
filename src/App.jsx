@@ -253,7 +253,7 @@ function App() {
                     <td>{task.assignee ?? 'Unassigned'}</td>
                     <td>
                       <span className="status-pill" style={getStatusStyles(task.statusColor)}>
-                        {task.status}
+                        {task.status?.toUpperCase()}
                       </span>
                     </td>
                     <td>{task.priority}</td>
@@ -299,15 +299,23 @@ function App() {
                     <span className="assignee-count">{ownedTasks.length} tasks</span>
                   </header>
                   <ul>
-                    {ownedTasks.map((task) => (
-                      <li key={task.id}>
-                        <div className="assignee-task-heading">
-                          <p className="task-name">{task.name}</p>
-                          <span className="status-pill" style={getStatusStyles(task.statusColor)}>
-                            {task.status}
-                          </span>
-                        </div>
-                        <div className="task-meta-row">
+                    {ownedTasks.map((task) => {
+                      const normalizedStatus = task.status?.trim();
+                      const showStatus =
+                        normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
+                      const statusLabel = normalizedStatus ? normalizedStatus.toUpperCase() : '';
+
+                      return (
+                        <li key={task.id}>
+                          <div className="assignee-task-heading">
+                            <p className="task-name">{task.name}</p>
+                          </div>
+                          <div className="task-meta-row">
+                            {showStatus ? (
+                              <span className="status-pill" style={getStatusStyles(task.statusColor)}>
+                                {statusLabel}
+                              </span>
+                            ) : null}
                           <span
                             className="priority-chip"
                             style={getPriorityStyles(task.priorityColor)}
@@ -340,9 +348,10 @@ function App() {
                           {task.deadline ? (
                             <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
                           ) : null}
-                        </div>
-                      </li>
-                    ))}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </article>
               ))}
