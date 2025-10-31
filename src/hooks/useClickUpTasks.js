@@ -26,6 +26,19 @@ const CLOSED_STATUS_VALUES = new Set([
   'resolved',
 ]);
 
+const normalizeString = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value
+    .normalize('NFKD')
+    .replace(/[\u200d\ufe0f]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .toLowerCase();
+};
+
 const normalizeCustomFieldOptions = (field) => {
   const options = field?.type_config?.options;
   if (!Array.isArray(options)) {
@@ -46,11 +59,32 @@ const normalizeCustomFieldOptions = (field) => {
   );
 };
 
-const extractTagsFromCustomField = (task) => {
+const extractTagsFromCustomField = (task, { tagsFieldId } = {}) => {
   const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
+  const normalizedId = typeof tagsFieldId === 'string' ? tagsFieldId.trim() : '';
   const tagsField = customFields.find((field) => {
-    const fieldName = field?.name || field?.label;
-    return typeof fieldName === 'string' && fieldName.toLowerCase() === 'tags';
+    if (!field) {
+      return false;
+    }
+
+    const fieldId = field.id || field.uuid;
+    if (normalizedId && fieldId === normalizedId) {
+      return true;
+    }
+
+    const fieldType = normalizeString(field.type);
+    const fieldName = normalizeString(field.name || field.label);
+    const isLabelsField = fieldType === 'labels';
+
+    if (fieldName === 'tags') {
+      return true;
+    }
+
+    if (isLabelsField && fieldName.includes('tag')) {
+      return true;
+    }
+
+    return false;
   });
 
   if (!tagsField) {
@@ -95,7 +129,7 @@ const extractTagsFromCustomField = (task) => {
   return mappedValue ? [mappedValue] : [];
 };
 
-const mapTask = (task) => {
+const mapTask = (task, options = {}) => {
   const assigneeNames = (task.assignees || [])
     .map((assignee) => assignee.username || assignee.email || assignee.id)
     .filter(Boolean);
@@ -117,7 +151,7 @@ const mapTask = (task) => {
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
-    tags: extractTagsFromCustomField(task),
+    tags: extractTagsFromCustomField(task, options),
     url: task.url,
   };
 };
@@ -134,6 +168,7 @@ export function useClickUpTasks() {
       token: import.meta.env.VITE_CLICKUP_API_TOKEN,
       listId: import.meta.env.VITE_CLICKUP_LIST_ID,
       apiBase: resolveApiBase(),
+      tagsFieldId: import.meta.env.VITE_CLICKUP_TAGS_FIELD_ID,
     };
   }, []);
 
@@ -214,7 +249,7 @@ export function useClickUpTasks() {
           page += 1;
         }
 
-        const normalizedTasks = collectedTasks.map(mapTask);
+        const normalizedTasks = collectedTasks.map((task) => mapTask(task, config));
         setTasks(normalizedTasks);
         setStatus('success');
         hasLoadedOnceRef.current = true;

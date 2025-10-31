@@ -37,6 +37,8 @@ project root and provide the following variables:
 ```bash
 VITE_CLICKUP_API_TOKEN=pk_123456_your_token_here
 VITE_CLICKUP_LIST_ID=901234567
+# Optional: lock the dashboard to a specific ClickUp custom field ID
+VITE_CLICKUP_TAGS_FIELD_ID=a97cca27-34ae-4a49-8fbf-ba21f9224c8c
 ```
 
 - `VITE_CLICKUP_API_TOKEN` should be a ClickUp personal token with permission to read the desired
@@ -44,6 +46,9 @@ VITE_CLICKUP_LIST_ID=901234567
 - `VITE_CLICKUP_LIST_ID` is the numeric list ID that you want to monitor.
 - Optionally, set `VITE_CLICKUP_API_BASE_URL` if you need to point at a proxy or self-hosted API
   endpoint. When this variable is not provided the app will talk directly to the ClickUp REST API.
+- `VITE_CLICKUP_TAGS_FIELD_ID` is the ClickUp custom field ID for the labels field that powers the
+  Support table and risk metrics. Providing the ID is recommended when the field label includes
+  emoji or additional wording.
 
 You can also copy the provided `.env.local.example` file and replace the placeholder values with
 your real credentials:
@@ -59,11 +64,16 @@ section, and key metrics.
 
 ### Custom field requirements
 
-The dashboard relies on a ClickUp **custom field** named `Tags` to categorize tasks for the Support
-table and the key indicators. Configure this field as a Labels/Multi-select field and apply the
-values `Support`, `Vulnerability`, and `Downtime` (along with any others you wish to surface). The
-native ClickUp tag system is ignored—only the selections in the `Tags` custom field will appear in
-the dashboard.
+The dashboard relies on a ClickUp **custom field** that stores task labels to categorize work for
+the Support table and the key indicators. Configure this field as a Labels/Multi-select field and
+apply the values `Support`, `Vulnerability`, and `Downtime` (along with any others you wish to
+surface). The native ClickUp tag system is ignored—only the selections in this custom field will
+appear in the dashboard.
+
+By default the dashboard looks for a field whose name reduces to `Tags`, even if the actual label
+contains emoji or additional characters (for example, `🏷️ Tags`). If your workspace has multiple
+label fields, specify `VITE_CLICKUP_TAGS_FIELD_ID` in your environment configuration so the app
+always uses the correct one.
 
 ## Dependencies
 
