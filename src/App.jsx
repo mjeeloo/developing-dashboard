@@ -577,27 +577,40 @@ function App() {
                                     aria-hidden="true"
                                   >
                                     <rect
-                                      x="1.75"
-                                      y="5"
-                                      width="12.5"
+                                      x="2"
+                                      y="5.25"
+                                      width="12"
                                       height="8.25"
-                                      rx="2.25"
+                                      rx="2.1"
                                       stroke="currentColor"
-                                      strokeWidth="1.2"
+                                      strokeWidth="1.4"
                                       fill="none"
                                     />
                                     <path
-                                      d="M1.75 7.25h12.5"
+                                      d="M2.1 7.4h11.8"
                                       stroke="currentColor"
-                                      strokeWidth="1.2"
+                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                     />
                                     <path
-                                      d="M5.5 5V3.5A2 2 0 0 1 7.5 1.5h1a2 2 0 0 1 2 2V5"
+                                      d="M5.75 5.25V4.2M10.25 5.25V4.2"
                                       stroke="currentColor"
-                                      strokeWidth="1.2"
+                                      strokeWidth="1.4"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
+                                      stroke="currentColor"
+                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
+                                      fill="none"
+                                    />
+                                    <path
+                                      d="M6.7 9.3h2.6"
+                                      stroke="currentColor"
+                                      strokeWidth="1.4"
+                                      strokeLinecap="round"
                                     />
                                   </svg>
                                   <span>{task.projectName}</span>
