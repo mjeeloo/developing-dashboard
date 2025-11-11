@@ -278,8 +278,8 @@ const StatusBadge = ({ status, color, isClosed }) => {
   );
 };
 
-const MetricCard = ({ title, value, subtitle }) => (
-  <article className="metric-card surface-card">
+const MetricCard = ({ title, value, subtitle, className }) => (
+  <article className={`metric-card surface-card${className ? ` ${className}` : ''}`}>
     <h3>{title}</h3>
     <p className="metric-value">{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
@@ -561,6 +561,7 @@ function App() {
             title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
             subtitle='Priority set to "Urgent"'
+            className={status === 'success' && urgentCount > 0 ? 'urgent-pulse' : ''}
           />
         </section>
 
