@@ -705,35 +705,101 @@ function App() {
                                     {task.priority ? `${task.priority} priority` : 'Priority'}
                                   </span>
                                 </span>
-                                {tags.map((tag) => (
-                                  <span
-                                    className="tag-pill"
-                                    key={tag.name}
-                                    style={getTagStyles(tag.color)}
+                              {tags.map((tag) => (
+                                <span
+                                className="tag-pill"
+                                key={tag.name}
+                                style={getTagStyles(tag.color)}
+                                >
+                                {tag.name}
+                                </span>
+                              ))}
+                              {task.projectName ? (
+                                <span className="meta-pill task-project">
+                                  <svg
+                                    className="project-icon"
+                                    viewBox="0 0 16 16"
+                                    role="img"
+                                    aria-hidden="true"
                                   >
-                                    {tag.name}
-                                  </span>
-                                ))}
-                                {task.projectName ? (
-                                  <span className="meta-pill task-project">{task.projectName}</span>
-                                ) : null}
-                                {task.deadline ? (
-                                  <span className="meta-pill task-deadline">
-                                    Due {formatDate(task.deadline)}
-                                  </span>
-                                ) : null}
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : null}
-
-          </div>
+                                    <rect
+                                      x="2"
+                                      y="5.25"
+                                      width="12"
+                                      height="8.25"
+                                      rx="2.1"
+                                      stroke="currentColor"
+                                      fill="none"
+                                    />
+                                    <path
+                                      d="M2.1 7.4h11.8"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.75 5.25V4.2M10.25 5.25V4.2"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      fill="none"
+                                    />
+                                    <path
+                                      d="M6.7 9.3h2.6"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                  </svg>
+                                  <span>{task.projectName}</span>
+                                </span>
+                              ) : null}
+                              {task.deadline ? (
+                                <span className="meta-pill task-deadline">
+                                  <svg
+                                    className="deadline-icon"
+                                    viewBox="0 0 16 16"
+                                    role="img"
+                                    aria-hidden="true"
+                                  >
+                                    <rect
+                                      x="2.25"
+                                      y="3.5"
+                                      width="11.5"
+                                      height="10"
+                                      rx="2.1"
+                                      stroke="currentColor"
+                                      fill="none"
+                                    />
+                                    <path
+                                      d="M2.25 6.75h11.5"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.25 1.75V3.5M10.75 1.75V3.5"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                  </svg>
+                                  <span className="sr-only">Due {formatDate(task.deadline)}</span>
+                                  <span aria-hidden="true">{formatDate(task.deadline)}</span>
+                                </span>
+                              ) : null}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
         </section>
       </div>
     </div>
