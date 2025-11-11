@@ -135,7 +135,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
       return undefined;
     }
 
-    const baseRowHeight = 8;
+    const baseRowHeight = 2;
     let animationFrameId = null;
 
     const scheduleLayout = () => {
@@ -161,7 +161,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
         grid.style.gridAutoRows = `${baseRowHeight}px`;
 
         cards.forEach((card) => {
-          const totalHeight = card.offsetHeight;
+          const totalHeight = card.getBoundingClientRect().height;
           const span = Math.max(
             1,
             Math.ceil((totalHeight + gap) / (baseRowHeight + gap)),
