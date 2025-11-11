@@ -312,10 +312,20 @@
 }
 
 .assignee-grid {
-  display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  align-items: start;
+  display: block;
+  column-gap: 1.25rem;
+}
+
+@media (min-width: 680px) {
+  .assignee-grid {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1120px) {
+  .assignee-grid {
+    column-count: 3;
+  }
 }
 
 .assignee-card {
@@ -327,6 +337,9 @@
   gap: 0.75rem;
   background: linear-gradient(180deg, rgba(16, 27, 45, 0.95), rgba(var(--accent-secondary-rgb), 0.65));
   box-shadow: 0 20px 40px rgba(3, 7, 18, 0.45);
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+  width: 100%;
 }
 
 .assignee-card header {
