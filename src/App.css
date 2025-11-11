@@ -320,23 +320,6 @@
   text-transform: capitalize;
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 1.9rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(var(--accent-rgb), 0.18);
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
-}
-
 .assignee-grid {
   display: grid;
   gap: 1.25rem;
