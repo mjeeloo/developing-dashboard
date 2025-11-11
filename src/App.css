@@ -461,6 +461,10 @@
   align-items: center;
 }
 
+.task-meta-row svg {
+  stroke-width: 1.5;
+}
+
 .task-pill,
 .priority-chip,
 .tag-pill,

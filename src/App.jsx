@@ -583,25 +583,21 @@ function App() {
                                       height="8.25"
                                       rx="2.1"
                                       stroke="currentColor"
-                                      strokeWidth="1.4"
                                       fill="none"
                                     />
                                     <path
                                       d="M2.1 7.4h11.8"
                                       stroke="currentColor"
-                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                     />
                                     <path
                                       d="M5.75 5.25V4.2M10.25 5.25V4.2"
                                       stroke="currentColor"
-                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                     />
                                     <path
                                       d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
                                       stroke="currentColor"
-                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
                                       fill="none"
@@ -609,7 +605,6 @@ function App() {
                                     <path
                                       d="M6.7 9.3h2.6"
                                       stroke="currentColor"
-                                      strokeWidth="1.4"
                                       strokeLinecap="round"
                                     />
                                   </svg>
@@ -624,9 +619,34 @@ function App() {
                                     role="img"
                                     aria-hidden="true"
                                   >
+                                    <rect
+                                      x="2.25"
+                                      y="3.5"
+                                      width="11.5"
+                                      height="10"
+                                      rx="2.1"
+                                      stroke="currentColor"
+                                      fill="none"
+                                    />
                                     <path
-                                      d="M5.25 1a.75.75 0 0 1 .75.75V2h4V1.75a.75.75 0 0 1 1.5 0V2h.5A2.5 2.5 0 0 1 14.5 4.5v7A2.5 2.5 0 0 1 12 14h-8a2.5 2.5 0 0 1-2.5-2.5v-7A2.5 2.5 0 0 1 4 2h.5V1.75A.75.75 0 0 1 5.25 1Zm-1 2.5a1 1 0 0 0-1 1V6H12.5V4.5a1 1 0 0 0-1-1H11v.75a.75.75 0 0 1-1.5 0V3.5h-2v.75a.75.75 0 0 1-1.5 0V3.5Zm8 4.5H3.5v3.5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1Z"
-                                      fill="currentColor"
+                                      d="M2.25 6.75h11.5"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.25 1.75V3.5M10.75 1.75V3.5"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M6.25 9.5h3.5"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M6.25 11.5h2.1"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
                                     />
                                   </svg>
                                   <span className="sr-only">Due {formatDate(task.deadline)}</span>
