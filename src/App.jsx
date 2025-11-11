@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
@@ -122,6 +122,105 @@ const deriveStatusFallbackColor = (status, isClosed) => {
   }
 
   return '#38BDF8';
+};
+
+const useMasonryLayout = (containerRef, dependencyKey) => {
+  useEffect(() => {
+    const grid = containerRef.current;
+    if (
+      !grid ||
+      typeof ResizeObserver === 'undefined' ||
+      typeof MutationObserver === 'undefined'
+    ) {
+      return undefined;
+    }
+
+    const baseRowHeight = 8;
+    let animationFrameId = null;
+
+    const scheduleLayout = () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      animationFrameId = requestAnimationFrame(() => {
+        animationFrameId = null;
+        const cards = Array.from(grid.children).filter((node) =>
+          node instanceof HTMLElement,
+        );
+
+        if (cards.length === 0) {
+          grid.style.removeProperty('grid-auto-rows');
+          return;
+        }
+
+        const computedStyles = getComputedStyle(grid);
+        const gapValue = computedStyles.rowGap || computedStyles.gap || '0';
+        const gap = Number.parseFloat(gapValue) || 0;
+
+        grid.style.gridAutoRows = `${baseRowHeight}px`;
+
+        cards.forEach((card) => {
+          const totalHeight = card.offsetHeight;
+          const span = Math.max(
+            1,
+            Math.round((totalHeight + gap) / (baseRowHeight + gap)),
+          );
+          card.style.gridRowEnd = `span ${span}`;
+        });
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleLayout();
+    });
+
+    resizeObserver.observe(grid);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            resizeObserver.observe(node);
+          }
+        });
+        mutation.removedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            resizeObserver.unobserve(node);
+            node.style.removeProperty('grid-row-end');
+          }
+        });
+      });
+
+      scheduleLayout();
+    });
+
+    mutationObserver.observe(grid, { childList: true });
+
+    Array.from(grid.children).forEach((child) => {
+      if (child instanceof HTMLElement) {
+        resizeObserver.observe(child);
+      }
+    });
+
+    scheduleLayout();
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      grid.style.removeProperty('grid-auto-rows');
+
+      Array.from(grid.children).forEach((node) => {
+        if (node instanceof HTMLElement) {
+          node.style.removeProperty('grid-row-end');
+        }
+      });
+    };
+  }, [containerRef, dependencyKey]);
 };
 
 const getStatusPresentation = (status, color, isClosed) => {
@@ -332,6 +431,16 @@ function App() {
     }, {});
   }, [assignedTasks]);
 
+  const assigneeGridRef = useRef(null);
+
+  const masonryDependencyKey = useMemo(() => {
+    return Object.entries(tasksByAssignee)
+      .map(([assignee, ownedTasks]) => `${assignee}:${ownedTasks.length}`)
+      .join('|');
+  }, [tasksByAssignee]);
+
+  useMasonryLayout(assigneeGridRef, masonryDependencyKey);
+
   return (
     <div className="app">
       <div className="app-grid">
@@ -445,7 +554,7 @@ function App() {
             </p>
           ) : null}
           {Object.keys(tasksByAssignee).length > 0 ? (
-            <div className="assignee-grid">
+            <div className="assignee-grid" ref={assigneeGridRef}>
               {Object.entries(tasksByAssignee).map(([assignee, ownedTasks]) => (
                 <article className="assignee-card" key={assignee}>
                   <header>
