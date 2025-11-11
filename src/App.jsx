@@ -377,6 +377,102 @@ const getTagStyles = (color) => {
   };
 };
 
+const getNormalizedStatus = (value) =>
+  typeof value === 'string' ? value.trim().toLowerCase() : '';
+
+const getStatusSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  if (task.isClosed) {
+    return 0;
+  }
+
+  const normalizedStatus =
+    getNormalizedStatus(task.status) || getNormalizedStatus(task.statusType);
+
+  if (!normalizedStatus) {
+    return 5;
+  }
+
+  if (/(close|done|complete|resolved)/i.test(normalizedStatus)) {
+    return 0;
+  }
+
+  if (/(review|qa|approval)/i.test(normalizedStatus)) {
+    return 1;
+  }
+
+  if (/(progress|working|doing|active|open)/i.test(normalizedStatus)) {
+    return 2;
+  }
+
+  if (/(block|hold|wait|pending)/i.test(normalizedStatus)) {
+    return 3;
+  }
+
+  if (/(todo|to do|backlog|ready|new|unstart|plan)/i.test(normalizedStatus)) {
+    return 4;
+  }
+
+  return 5;
+};
+
+const PRIORITY_SORT_ORDER = ['urgent', 'high', 'normal', 'medium', 'low', 'none'];
+
+const getPrioritySortValue = (priority) => {
+  if (typeof priority !== 'string') {
+    return PRIORITY_SORT_ORDER.length;
+  }
+
+  const normalized = priority.trim().toLowerCase();
+  const index = PRIORITY_SORT_ORDER.indexOf(normalized);
+  if (index >= 0) {
+    return index;
+  }
+
+  return PRIORITY_SORT_ORDER.length;
+};
+
+const getDeadlineSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const source = task.deadline ?? task.dueDate;
+  if (!source) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const timestamp = Date.parse(source);
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+};
+
+const compareTasks = (a, b) => {
+  const statusA = getStatusSortValue(a);
+  const statusB = getStatusSortValue(b);
+  if (statusA !== statusB) {
+    return statusA - statusB;
+  }
+
+  const priorityA = getPrioritySortValue(a?.priority);
+  const priorityB = getPrioritySortValue(b?.priority);
+  if (priorityA !== priorityB) {
+    return priorityA - priorityB;
+  }
+
+  const deadlineA = getDeadlineSortValue(a);
+  const deadlineB = getDeadlineSortValue(b);
+  if (deadlineA !== deadlineB) {
+    return deadlineA - deadlineB;
+  }
+
+  const nameA = typeof a?.name === 'string' ? a.name : '';
+  const nameB = typeof b?.name === 'string' ? b.name : '';
+  return nameA.localeCompare(nameB);
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
@@ -461,13 +557,11 @@ function App() {
     [tasks],
   );
 
-  const supportTasks = useMemo(
-    () =>
-      activeTasks.filter(
-        (task) => Array.isArray(task.tags) && task.tags.includes('Support'),
-      ),
-    [activeTasks],
-  );
+  const supportTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => Array.isArray(task.tags) && task.tags.includes('Support'))
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const vulnerabilityCount = useMemo(
     () =>
@@ -494,13 +588,13 @@ function App() {
     [activeTasks],
   );
 
-  const assignedTasks = useMemo(
-    () =>
-      activeTasks.filter((task) => {
+  const assignedTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => {
         return Boolean(task.assignee);
-      }),
-    [activeTasks],
-  );
+      })
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
