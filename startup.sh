@@ -40,7 +40,6 @@ cd "$DASH_DIR"
 git pull --ff-only
 # Prefer reproducible installs over 'sudo npm update'
 if command -v npm >/dev/null 2>&1; then
-  npm ci || npm install
   nohup npm run dev >/tmp/dashboard-dev.log 2>&1 &
 else
   echo "npm not found. Install Node.js/npm." >&2
