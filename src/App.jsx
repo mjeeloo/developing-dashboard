@@ -403,7 +403,6 @@ function App() {
         <section className="panel support-panel" aria-labelledby="support-tasks-heading">
         <div className="panel-header">
           <h2 id="support-tasks-heading">Support tasks</h2>
-          <p className="panel-subtitle">All tasks labeled with the "Support" tag</p>
         </div>
         <div className="panel-body">
           {status === 'loading' ? (
@@ -478,9 +477,6 @@ function App() {
         <section className="panel assignee-panel" aria-labelledby="assignee-heading">
         <div className="panel-header">
           <h2 id="assignee-heading">Tasks by assignee</h2>
-          <p className="panel-subtitle">
-            Overview of all tasks by assignee
-          </p>
         </div>
         <div className="panel-body">
           {status === 'loading' ? (
