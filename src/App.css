@@ -508,7 +508,16 @@
 }
 
 .task-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-weight: 700;
+}
+
+.deadline-icon {
+  width: 1rem;
+  height: 1rem;
+  display: block;
 }
 
 .priority-flag-icon {

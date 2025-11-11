@@ -572,7 +572,21 @@ function App() {
                                 <span className="meta-pill task-project">{task.projectName}</span>
                               ) : null}
                               {task.deadline ? (
-                                <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
+                                <span className="meta-pill task-deadline">
+                                  <svg
+                                    className="deadline-icon"
+                                    viewBox="0 0 16 16"
+                                    role="img"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      d="M5.25 1a.75.75 0 0 1 .75.75V2h4V1.75a.75.75 0 0 1 1.5 0V2h.5A2.5 2.5 0 0 1 14.5 4.5v7A2.5 2.5 0 0 1 12 14h-8a2.5 2.5 0 0 1-2.5-2.5v-7A2.5 2.5 0 0 1 4 2h.5V1.75A.75.75 0 0 1 5.25 1Zm-1 2.5a1 1 0 0 0-1 1V6H12.5V4.5a1 1 0 0 0-1-1H11v.75a.75.75 0 0 1-1.5 0V3.5h-2v.75a.75.75 0 0 1-1.5 0V3.5Zm8 4.5H3.5v3.5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1Z"
+                                      fill="currentColor"
+                                    />
+                                  </svg>
+                                  <span className="sr-only">Due {formatDate(task.deadline)}</span>
+                                  <span aria-hidden="true">{formatDate(task.deadline)}</span>
+                                </span>
                               ) : null}
                             </div>
                           </li>
