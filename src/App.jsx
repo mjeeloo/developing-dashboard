@@ -576,13 +576,28 @@ function App() {
                                     role="img"
                                     aria-hidden="true"
                                   >
-                                    <path
-                                      d="M6.5 0a.5.5 0 0 0-.5.5V2H3a2 2 0 0 0-2 2v1h14V4a2 2 0 0 0-2-2h-3V.5a.5.5 0 0 0-.5-.5Z"
-                                      fill="currentColor"
+                                    <rect
+                                      x="1.75"
+                                      y="5"
+                                      width="12.5"
+                                      height="8.25"
+                                      rx="2.25"
+                                      stroke="currentColor"
+                                      strokeWidth="1.2"
+                                      fill="none"
                                     />
                                     <path
-                                      d="M0 5v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5H0Zm4.5 3.5A.5.5 0 0 1 5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5Z"
-                                      fill="currentColor"
+                                      d="M1.75 7.25h12.5"
+                                      stroke="currentColor"
+                                      strokeWidth="1.2"
+                                      strokeLinecap="round"
+                                    />
+                                    <path
+                                      d="M5.5 5V3.5A2 2 0 0 1 7.5 1.5h1a2 2 0 0 1 2 2V5"
+                                      stroke="currentColor"
+                                      strokeWidth="1.2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
                                     />
                                   </svg>
                                   <span>{task.projectName}</span>
