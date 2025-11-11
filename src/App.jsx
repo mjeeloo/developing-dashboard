@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import logo from './assets/logo.svg';
 import { useClickUpTasks } from './hooks/useClickUpTasks.js';
@@ -144,6 +144,105 @@ const deriveStatusFallbackColor = (status, isClosed) => {
   }
 
   return '#38BDF8';
+};
+
+const useMasonryLayout = (containerRef, dependencyKey) => {
+  useEffect(() => {
+    const grid = containerRef.current;
+    if (
+      !grid ||
+      typeof ResizeObserver === 'undefined' ||
+      typeof MutationObserver === 'undefined'
+    ) {
+      return undefined;
+    }
+
+    const baseRowHeight = 2;
+    let animationFrameId = null;
+
+    const scheduleLayout = () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      animationFrameId = requestAnimationFrame(() => {
+        animationFrameId = null;
+        const cards = Array.from(grid.children).filter((node) =>
+          node instanceof HTMLElement,
+        );
+
+        if (cards.length === 0) {
+          grid.style.removeProperty('grid-auto-rows');
+          return;
+        }
+
+        const computedStyles = getComputedStyle(grid);
+        const gapValue = computedStyles.rowGap || computedStyles.gap || '0';
+        const gap = Number.parseFloat(gapValue) || 0;
+
+        grid.style.gridAutoRows = `${baseRowHeight}px`;
+
+        cards.forEach((card) => {
+          const totalHeight = card.getBoundingClientRect().height;
+          const span = Math.max(
+            1,
+            Math.ceil((totalHeight + gap) / (baseRowHeight + gap)),
+          );
+          card.style.gridRowEnd = `span ${span}`;
+        });
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleLayout();
+    });
+
+    resizeObserver.observe(grid);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            resizeObserver.observe(node);
+          }
+        });
+        mutation.removedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            resizeObserver.unobserve(node);
+            node.style.removeProperty('grid-row-end');
+          }
+        });
+      });
+
+      scheduleLayout();
+    });
+
+    mutationObserver.observe(grid, { childList: true });
+
+    Array.from(grid.children).forEach((child) => {
+      if (child instanceof HTMLElement) {
+        resizeObserver.observe(child);
+      }
+    });
+
+    scheduleLayout();
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      grid.style.removeProperty('grid-auto-rows');
+
+      Array.from(grid.children).forEach((node) => {
+        if (node instanceof HTMLElement) {
+          node.style.removeProperty('grid-row-end');
+        }
+      });
+    };
+  }, [containerRef, dependencyKey]);
 };
 
 const getStatusPresentation = (status, color, isClosed) => {
@@ -316,22 +415,35 @@ function App() {
   );
 
   const supportTasks = useMemo(
-    () => activeTasks.filter((task) => task.tags.includes('Support')),
+    () =>
+      activeTasks.filter(
+        (task) => Array.isArray(task.tags) && task.tags.includes('Support'),
+      ),
     [activeTasks],
   );
 
   const vulnerabilityCount = useMemo(
-    () => activeTasks.filter((task) => task.tags.includes('Vulnerability')).length,
+    () =>
+      activeTasks.filter(
+        (task) => Array.isArray(task.tags) && task.tags.includes('Vulnerability'),
+      ).length,
     [activeTasks],
   );
 
   const downtimeCount = useMemo(
-    () => activeTasks.filter((task) => task.tags.includes('Downtime')).length,
+    () =>
+      activeTasks.filter(
+        (task) => Array.isArray(task.tags) && task.tags.includes('Downtime'),
+      ).length,
     [activeTasks],
   );
 
   const urgentCount = useMemo(
-    () => activeTasks.filter((task) => task.priority.toLowerCase() === 'urgent').length,
+    () =>
+      activeTasks.filter(
+        (task) =>
+          typeof task.priority === 'string' && task.priority.toLowerCase() === 'urgent',
+      ).length,
     [activeTasks],
   );
 
@@ -369,6 +481,16 @@ function App() {
     }, {});
   }, [assignedTasks]);
 
+  const assigneeGridRef = useRef(null);
+
+  const masonryDependencyKey = useMemo(() => {
+    return Object.entries(tasksByAssignee)
+      .map(([assignee, ownedTasks]) => `${assignee}:${ownedTasks.length}`)
+      .join('|');
+  }, [tasksByAssignee]);
+
+  useMasonryLayout(assigneeGridRef, masonryDependencyKey);
+
   return (
     <div className="app">
       <div className="app-grid">
@@ -401,171 +523,187 @@ function App() {
         </section>
 
         <section className="panel support-panel" aria-labelledby="support-tasks-heading">
-        <div className="panel-header">
-          <h2 id="support-tasks-heading">Support tasks</h2>
-          <p className="panel-subtitle">All tasks labeled with the "Support" tag</p>
-        </div>
-        <div className="panel-body">
-          {status === 'loading' ? (
-            <p className="status-message" role="status">
-              Loading tasks from ClickUp…
-            </p>
-          ) : null}
-          {status === 'error' ? (
-            <p className="status-message error" role="alert">
-              {error?.message ?? 'Unable to load tasks from ClickUp.'}
-            </p>
-          ) : null}
-          {status === 'success' && supportTasks.length === 0 ? (
-            <p className="status-message" role="status">
-              No tasks with the 'Support' tag are currently open.
-            </p>
-          ) : null}
-          {supportTasks.length > 0 ? (
-            <div className="table-wrapper">
-              <table className="support-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Task</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" className="assignee-column">Assignee</th>
-                    <th scope="col" className="project-column">Project</th>
-                    <th scope="col">Priority</th>
-                    <th scope="col">Deadline</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {supportTasks.map((task) => (
-                  <tr key={task.id}>
-                    <th scope="row" className="task-cell">
-                      <span className="task-name">{task.name}</span>
-                    </th>
-                    <td className="status-cell">
-                      <StatusBadge status={task.status} color={task.statusColor} isClosed={task.isClosed} />
-                    </td>
-                    <td className="assignee-column">
-                      {Array.isArray(task.assignees) && task.assignees.length > 0 ? (
-                        <div className="assignee-cell">
-                          <div className="assignee-bubble" aria-hidden="true">
-                            {task.assignees[0].avatar ? (
-                              <img src={task.assignees[0].avatar} alt="" />
-                            ) : (
-                              <span>{getInitials(task.assignees[0].name)}</span>
-                            )}
-                          </div>
-                          <span className="assignee-name" title={task.assignee}>
-                            {task.assignee}
-                          </span>
-                        </div>
-                      ) : (
-                        PLACEHOLDER
-                      )}
-                    </td>
-                    <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
-                    <td className="priority-cell">
-                      <PriorityBadge priority={task.priority} color={task.priorityColor} />
-                    </td>
-                    <td>{formatDeadline(task.deadline ?? task.dueDate)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-          ) : null}
-        </div>
+          <div className="panel-header">
+            <h2 id="support-tasks-heading">Support tasks</h2>
+          </div>
+          <div className="panel-body">
+            {status === 'loading' ? (
+              <p className="status-message" role="status">
+                Loading tasks from ClickUp…
+              </p>
+            ) : null}
+            {status === 'error' ? (
+              <p className="status-message error" role="alert">
+                {error?.message ?? 'Unable to load tasks from ClickUp.'}
+              </p>
+            ) : null}
+            {status === 'success' && supportTasks.length === 0 ? (
+              <p className="status-message" role="status">
+                No tasks with the 'Support' tag are currently open.
+              </p>
+            ) : null}
+            {supportTasks.length > 0 ? (
+              <div className="table-wrapper">
+                <table className="support-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Task</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" className="assignee-column">Assignee</th>
+                      <th scope="col" className="project-column">Project</th>
+                      <th scope="col">Priority</th>
+                      <th scope="col">Deadline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {supportTasks.map((task) => {
+                    const primaryAssignee =
+                      Array.isArray(task.assignees) && task.assignees.length > 0
+                        ? task.assignees[0]
+                        : null;
+                    const assigneeName =
+                      typeof task.assignee === 'string' && task.assignee.trim().length > 0
+                        ? task.assignee
+                        : null;
+                    const displayName = assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
+                    const titleValue = displayName === PLACEHOLDER ? undefined : displayName;
+                    const bubbleInitialSource = primaryAssignee?.name ?? assigneeName ?? '';
+
+                    return (
+                      <tr key={task.id}>
+                        <th scope="row" className="task-cell">
+                          <span className="task-name">{task.name}</span>
+                        </th>
+                        <td className="status-cell">
+                          <StatusBadge
+                            status={task.status}
+                            color={task.statusColor}
+                            isClosed={task.isClosed}
+                          />
+                        </td>
+                        <td className="assignee-column">
+                          {primaryAssignee || assigneeName ? (
+                            <div className="assignee-cell">
+                              <div className="assignee-bubble" aria-hidden="true">
+                                {primaryAssignee?.avatar ? (
+                                  <img src={primaryAssignee.avatar} alt="" />
+                                ) : (
+                                  <span>{getInitials(bubbleInitialSource)}</span>
+                                )}
+                              </div>
+                              <span className="assignee-name" title={titleValue}>
+                                {displayName}
+                              </span>
+                            </div>
+                          ) : (
+                            PLACEHOLDER
+                          )}
+                        </td>
+                        <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
+                        <td className="priority-cell">
+                          <PriorityBadge priority={task.priority} color={task.priorityColor} />
+                        </td>
+                        <td>{formatDeadline(task.deadline ?? task.dueDate)}</td>
+                      </tr>
+                    );
+                  })}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+          </div>
         </section>
 
         <section className="panel assignee-panel" aria-labelledby="assignee-heading">
-        <div className="panel-header">
-          <h2 id="assignee-heading">Tasks by assignee</h2>
-          <p className="panel-subtitle">
-            Overview of all tasks by assignee
-          </p>
-        </div>
-        <div className="panel-body">
-          {status === 'loading' ? (
-            <p className="status-message" role="status">
-              Loading tasks from ClickUp…
-            </p>
-          ) : null}
-          {status === 'error' ? (
-            <p className="status-message error" role="alert">
-              {error?.message ?? 'Unable to load tasks from ClickUp.'}
-            </p>
-          ) : null}
-          {status === 'success' && Object.keys(tasksByAssignee).length === 0 ? (
-            <p className="status-message" role="status">
-              No tasks available for the workload overview.
-            </p>
-          ) : null}
-          {Object.keys(tasksByAssignee).length > 0 ? (
-            <div className="assignee-grid">
-              {Object.entries(tasksByAssignee).map(([assignee, assigneeData]) => {
-                const ownedTasks = assigneeData.tasks;
-                return (
-                  <article className="assignee-card" key={assignee}>
-                    <header>
-                      <div className="assignee-header">
-                        <div className="assignee-bubble assignee-bubble--large" aria-hidden="true">
-                          {assigneeData.avatar ? (
-                            <img src={assigneeData.avatar} alt="" />
-                          ) : (
-                            <span>{getInitials(assignee)}</span>
-                          )}
-                        </div>
-                        <div className="assignee-header-text">
-                          <h3>{assignee}</h3>
-                          <span className="assignee-count">
-                            {ownedTasks.length === 1
-                              ? '1 task'
-                              : `${ownedTasks.length} tasks`}
-                          </span>
-                        </div>
-                      </div>
-                    </header>
-                    <ul>
-                      {ownedTasks.map((task) => {
-                        const normalizedStatus = task.status?.trim();
-                        const showStatus =
-                          normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
+          <div className="panel-header">
+            <h2 id="assignee-heading">Tasks by assignee</h2>
+          </div>
+          <div className="panel-body">
+            {status === 'loading' ? (
+              <p className="status-message" role="status">
+                Loading tasks from ClickUp…
+              </p>
+            ) : null}
+            {status === 'error' ? (
+              <p className="status-message error" role="alert">
+                {error?.message ?? 'Unable to load tasks from ClickUp.'}
+              </p>
+            ) : null}
+            {status === 'success' && Object.keys(tasksByAssignee).length === 0 ? (
+              <p className="status-message" role="status">
+                No tasks available for the workload overview.
+              </p>
+            ) : null}
+            {Object.keys(tasksByAssignee).length > 0 ? (
+              <div className="assignee-grid" ref={assigneeGridRef}>
+                {Object.entries(tasksByAssignee).map(([assignee, assigneeData]) => {
+                  const ownedTasks = assigneeData.tasks;
+                  const mapTagsToDetails = (tags) =>
+                    Array.isArray(tags)
+                      ? tags.map((tag) => ({ name: tag, color: null }))
+                      : [];
 
-                        return (
-                          <li key={task.id} className="assignee-task-card">
-                            <div className="assignee-task-heading">
-                              <p className="task-name">{task.name}</p>
-                            </div>
-                            <div className="task-meta-row">
-                              {showStatus ? (
-                                <StatusBadge
-                                  status={task.status}
-                                  color={task.statusColor}
-                                  isClosed={task.isClosed}
-                                />
-                              ) : null}
-                              <span
-                                className="priority-chip"
-                                style={getPriorityStyles(task.priorityColor)}
-                                title={`${task.priority} priority`}
-                              >
-                                <svg
-                                  className="priority-flag-icon"
-                                  viewBox="0 0 16 16"
-                                  role="img"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
-                                    fill="currentColor"
+                  return (
+                    <article className="assignee-card" key={assignee}>
+                      <header>
+                        <div className="assignee-header">
+                          <div className="assignee-bubble assignee-bubble--large" aria-hidden="true">
+                            {assigneeData.avatar ? (
+                              <img src={assigneeData.avatar} alt="" />
+                            ) : (
+                              <span>{getInitials(assignee)}</span>
+                            )}
+                          </div>
+                          <div className="assignee-header-text">
+                            <h3>{assignee}</h3>
+                            <span className="assignee-count">
+                              {ownedTasks.length === 1 ? '1 task' : `${ownedTasks.length} tasks`}
+                            </span>
+                          </div>
+                        </div>
+                      </header>
+                      <ul>
+                        {ownedTasks.map((task) => {
+                          const normalizedStatus = task.status?.trim();
+                          const showStatus =
+                            normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
+                          const tags =
+                            task.tagDetails && task.tagDetails.length > 0
+                              ? task.tagDetails
+                              : mapTagsToDetails(task.tags);
+
+                          return (
+                            <li key={task.id} className="assignee-task-card">
+                              <div className="assignee-task-heading">
+                                <p className="task-name">{task.name}</p>
+                              </div>
+                              <div className="task-meta-row">
+                                {showStatus ? (
+                                  <StatusBadge
+                                    status={task.status}
+                                    color={task.statusColor}
+                                    isClosed={task.isClosed}
                                   />
-                                </svg>
-                                <span className="sr-only">{`${task.priority} priority`}</span>
-                              </span>
-                              {(task.tagDetails && task.tagDetails.length > 0
-                                ? task.tagDetails
-                                : task.tags.map((tag) => ({ name: tag, color: null }))
-                              ).map((tag) => (
-                                <span className="tag-pill" key={tag.name} style={getTagStyles(tag.color)}>
-                                  {tag.name}
+                                ) : null}
+                                <span
+                                  className="priority-chip"
+                                  style={getPriorityStyles(task.priorityColor)}
+                                  title={task.priority ? `${task.priority} priority` : undefined}
+                                >
+                                  <svg
+                                    className="priority-flag-icon"
+                                    viewBox="0 0 16 16"
+                                    role="img"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
+                                      fill="currentColor"
+                                    />
+                                  </svg>
+                                  <span className="sr-only">
+                                    {task.priority ? `${task.priority} priority` : 'Priority'}
+                                  </span>
                                 </span>
                               ))}
                               {task.projectName ? (
@@ -654,6 +792,35 @@ function App() {
             </div>
           ) : null}
         </div>
+                                {tags.map((tag) => (
+                                  <span
+                                    className="tag-pill"
+                                    key={tag.name}
+                                    style={getTagStyles(tag.color)}
+                                  >
+                                    {tag.name}
+                                  </span>
+                                ))}
+                                {task.projectName ? (
+                                  <span className="meta-pill task-project">{task.projectName}</span>
+                                ) : null}
+                                {task.deadline ? (
+                                  <span className="meta-pill task-deadline">
+                                    Due {formatDate(task.deadline)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
+
+          </div>
         </section>
       </div>
     </div>
