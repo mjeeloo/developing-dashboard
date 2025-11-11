@@ -314,18 +314,8 @@
 .assignee-grid {
   display: block;
   column-gap: 1.25rem;
-}
-
-@media (min-width: 680px) {
-  .assignee-grid {
-    column-count: 2;
-  }
-}
-
-@media (min-width: 1120px) {
-  .assignee-grid {
-    column-count: 3;
-  }
+  column-width: clamp(18rem, 28vw, 22rem);
+  column-fill: balance;
 }
 
 .assignee-card {
