@@ -499,25 +499,39 @@ function App() {
 
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
-      const owner = task.assignee;
-      if (!owner) {
+      const assigneesArray = Array.isArray(task.assignees) ? task.assignees : [];
+      const hasAssignees = assigneesArray.length > 0;
+
+      // Fallback: if no structured assignees are available but a string exists, split it
+      const fallbackAssignees = !hasAssignees && typeof task.assignee === 'string'
+        ? task.assignee
+            .split(',')
+            .map((name) => name.trim())
+            .filter(Boolean)
+            .map((name) => ({ id: name, name, avatar: null }))
+        : [];
+
+      const individuals = hasAssignees ? assigneesArray : fallbackAssignees;
+      if (individuals.length === 0) {
         return accumulator;
       }
 
-      const primaryAssignee = Array.isArray(task.assignees) && task.assignees.length > 0 ? task.assignees[0] : null;
-
-      if (!accumulator[owner]) {
-        accumulator[owner] = {
-          tasks: [],
-          avatar: primaryAssignee?.avatar ?? null,
-        };
-      }
-
-      accumulator[owner].tasks.push(task);
-
-      if (!accumulator[owner].avatar && primaryAssignee?.avatar) {
-        accumulator[owner].avatar = primaryAssignee.avatar;
-      }
+      individuals.forEach((person) => {
+        const key = person.name;
+        if (!key) {
+          return;
+        }
+        if (!accumulator[key]) {
+          accumulator[key] = {
+            tasks: [],
+            avatar: person.avatar ?? null,
+          };
+        }
+        accumulator[key].tasks.push(task);
+        if (!accumulator[key].avatar && person.avatar) {
+          accumulator[key].avatar = person.avatar;
+        }
+      });
 
       return accumulator;
     }, {});
@@ -527,7 +541,7 @@ function App() {
 
   const masonryDependencyKey = useMemo(() => {
     return Object.entries(tasksByAssignee)
-      .map(([assignee, ownedTasks]) => `${assignee}:${ownedTasks.length}`)
+      .map(([assignee, data]) => `${assignee}:${(data?.tasks || []).length}`)
       .join('|');
   }, [tasksByAssignee]);
 
