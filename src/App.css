@@ -577,3 +577,9 @@
     min-width: 0;
   }
 }
+
+/* Hide cursor when inactive */
+body.hide-cursor,
+.app.hide-cursor {
+  cursor: none !important;
+}

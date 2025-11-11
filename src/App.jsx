@@ -388,6 +388,48 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const root = document.body;
+    const INACTIVITY_MS = 4000;
+    let timeoutId = null;
+
+    const showCursor = () => {
+      root.classList.remove('hide-cursor');
+    };
+
+    const scheduleHide = () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(() => {
+        root.classList.add('hide-cursor');
+      }, INACTIVITY_MS);
+    };
+
+    const onActivity = () => {
+      showCursor();
+      scheduleHide();
+    };
+
+    const events = ['mousemove', 'mousedown', 'touchstart', 'keydown', 'wheel'];
+    events.forEach((event) => {
+      window.addEventListener(event, onActivity, { passive: true });
+    });
+
+    // start timer initially
+    scheduleHide();
+
+    return () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+      events.forEach((event) => {
+        window.removeEventListener(event, onActivity);
+      });
+      root.classList.remove('hide-cursor');
+    };
+  }, []);
+
   const currentTime = useMemo(
     () =>
       new Intl.DateTimeFormat('en-US', {
