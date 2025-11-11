@@ -438,7 +438,19 @@ function App() {
                   {supportTasks.map((task) => (
                   <tr key={task.id}>
                     <th scope="row" className="task-cell">
-                      <span className="task-name">{task.name}</span>
+                      {task.url ? (
+                        <a
+                          href={task.url}
+                          className="task-name task-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {task.name}
+                          <span className="sr-only"> (opens in ClickUp)</span>
+                        </a>
+                      ) : (
+                        <span className="task-name">{task.name}</span>
+                      )}
                     </th>
                     <td className="status-cell">
                       <StatusBadge status={task.status} color={task.statusColor} isClosed={task.isClosed} />
@@ -531,9 +543,21 @@ function App() {
 
                         return (
                           <li key={task.id} className="assignee-task-card">
-                            <div className="assignee-task-heading">
-                              <p className="task-name">{task.name}</p>
-                            </div>
+                              <div className="assignee-task-heading">
+                                {task.url ? (
+                                  <a
+                                    href={task.url}
+                                    className="task-name task-link"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {task.name}
+                                    <span className="sr-only"> (opens in ClickUp)</span>
+                                  </a>
+                                ) : (
+                                  <span className="task-name">{task.name}</span>
+                                )}
+                              </div>
                             <div className="task-meta-row">
                               {showStatus ? (
                                 <StatusBadge
