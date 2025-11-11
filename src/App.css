@@ -503,8 +503,17 @@
 }
 
 .task-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.project-icon {
+  width: 1rem;
+  height: 1rem;
+  display: block;
 }
 
 .task-deadline {

@@ -569,7 +569,24 @@ function App() {
                                 </span>
                               ))}
                               {task.projectName ? (
-                                <span className="meta-pill task-project">{task.projectName}</span>
+                                <span className="meta-pill task-project">
+                                  <svg
+                                    className="project-icon"
+                                    viewBox="0 0 16 16"
+                                    role="img"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      d="M2 4.75A1.75 1.75 0 0 1 3.75 3h2.5c.69 0 1.29.388 1.582.957l.177.353H12.5A1.5 1.5 0 0 1 14 5.81v6.44A1.75 1.75 0 0 1 12.25 14H3.75A1.75 1.75 0 0 1 2 12.25Z"
+                                      fill="currentColor"
+                                    />
+                                    <path
+                                      d="M6.25 4.5H3.75a.25.25 0 0 0-.25.25V6h4.5l-.433-.865A1.25 1.25 0 0 0 6.25 4.5Z"
+                                      fill="currentColor"
+                                    />
+                                  </svg>
+                                  <span>{task.projectName}</span>
+                                </span>
                               ) : null}
                               {task.deadline ? (
                                 <span className="meta-pill task-deadline">
