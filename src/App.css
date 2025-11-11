@@ -369,14 +369,14 @@
 
 .assignee-grid {
   display: grid;
-  gap: 1.25rem;
+  gap: 1rem;
   grid-template-columns: repeat(
     auto-fit,
-    minmax(clamp(18rem, 28vw, 24rem), 1fr)
+    minmax(clamp(14rem, 22vw, 20rem), 1fr)
   );
   align-items: start;
-  column-width: 260px;
-  column-gap: 1.25rem;
+  column-width: 200px;
+  column-gap: 0.9rem;
 }
 
 .assignee-card {
@@ -515,7 +515,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.08em;
 }
 
