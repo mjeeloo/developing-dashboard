@@ -5,6 +5,28 @@ import { useClickUpTasks } from './hooks/useClickUpTasks.js';
 
 const PLACEHOLDER = '—';
 
+const getInitials = (name) => {
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    return '';
+  }
+
+  const segments = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (segments.length === 0) {
+    return '';
+  }
+
+  const [first, second] = segments;
+  if (!second) {
+    return first.charAt(0).toUpperCase();
+  }
+
+  return `${first.charAt(0)}${second.charAt(0)}`.toUpperCase();
+};
+
 const capitalizeWords = (value) => {
   if (typeof value !== 'string') {
     return '';
@@ -324,10 +346,25 @@ function App() {
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
       const owner = task.assignee;
-      if (!accumulator[owner]) {
-        accumulator[owner] = [];
+      if (!owner) {
+        return accumulator;
       }
-      accumulator[owner].push(task);
+
+      const primaryAssignee = Array.isArray(task.assignees) && task.assignees.length > 0 ? task.assignees[0] : null;
+
+      if (!accumulator[owner]) {
+        accumulator[owner] = {
+          tasks: [],
+          avatar: primaryAssignee?.avatar ?? null,
+        };
+      }
+
+      accumulator[owner].tasks.push(task);
+
+      if (!accumulator[owner].avatar && primaryAssignee?.avatar) {
+        accumulator[owner].avatar = primaryAssignee.avatar;
+      }
+
       return accumulator;
     }, {});
   }, [assignedTasks]);
@@ -406,7 +443,24 @@ function App() {
                     <td className="status-cell">
                       <StatusBadge status={task.status} color={task.statusColor} isClosed={task.isClosed} />
                     </td>
-                    <td className="assignee-column">{task.assignee ?? PLACEHOLDER}</td>
+                    <td className="assignee-column">
+                      {Array.isArray(task.assignees) && task.assignees.length > 0 ? (
+                        <div className="assignee-cell">
+                          <div className="assignee-bubble" aria-hidden="true">
+                            {task.assignees[0].avatar ? (
+                              <img src={task.assignees[0].avatar} alt="" />
+                            ) : (
+                              <span>{getInitials(task.assignees[0].name)}</span>
+                            )}
+                          </div>
+                          <span className="assignee-name" title={task.assignee}>
+                            {task.assignee}
+                          </span>
+                        </div>
+                      ) : (
+                        PLACEHOLDER
+                      )}
+                    </td>
                     <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
                     <td className="priority-cell">
                       <PriorityBadge priority={task.priority} color={task.priorityColor} />
@@ -446,74 +500,89 @@ function App() {
           ) : null}
           {Object.keys(tasksByAssignee).length > 0 ? (
             <div className="assignee-grid">
-              {Object.entries(tasksByAssignee).map(([assignee, ownedTasks]) => (
-                <article className="assignee-card" key={assignee}>
-                  <header>
-                    <h3>{assignee}</h3>
-                    <span className="assignee-count">
-                      {ownedTasks.length === 1
-                        ? '1 task'
-                        : `${ownedTasks.length} tasks`}
-                    </span>
-                  </header>
-                  <ul>
-                    {ownedTasks.map((task) => {
-                      const normalizedStatus = task.status?.trim();
-                      const showStatus =
-                        normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
-
-                      return (
-                        <li key={task.id} className="assignee-task-card">
-                          <div className="assignee-task-heading">
-                            <p className="task-name">{task.name}</p>
-                          </div>
-                          <div className="task-meta-row">
-                            {showStatus ? (
-                              <StatusBadge
-                                status={task.status}
-                                color={task.statusColor}
-                                isClosed={task.isClosed}
-                              />
-                            ) : null}
-                          <span
-                            className="priority-chip"
-                            style={getPriorityStyles(task.priorityColor)}
-                            title={`${task.priority} priority`}
-                          >
-                            <svg
-                              className="priority-flag-icon"
-                              viewBox="0 0 16 16"
-                              role="img"
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
-                                fill="currentColor"
-                              />
-                            </svg>
-                            <span className="sr-only">{`${task.priority} priority`}</span>
+              {Object.entries(tasksByAssignee).map(([assignee, assigneeData]) => {
+                const ownedTasks = assigneeData.tasks;
+                return (
+                  <article className="assignee-card" key={assignee}>
+                    <header>
+                      <div className="assignee-header">
+                        <div className="assignee-bubble assignee-bubble--large" aria-hidden="true">
+                          {assigneeData.avatar ? (
+                            <img src={assigneeData.avatar} alt="" />
+                          ) : (
+                            <span>{getInitials(assignee)}</span>
+                          )}
+                        </div>
+                        <div className="assignee-header-text">
+                          <h3>{assignee}</h3>
+                          <span className="assignee-count">{ownedTasks.length} tasks</span>
+                          <span className="assignee-count">
+                            {ownedTasks.length === 1
+                              ? '1 task'
+                              : `${ownedTasks.length} tasks`}
                           </span>
-                          {(task.tagDetails && task.tagDetails.length > 0
-                            ? task.tagDetails
-                            : task.tags.map((tag) => ({ name: tag, color: null }))
-                          ).map((tag) => (
-                            <span className="tag-pill" key={tag.name} style={getTagStyles(tag.color)}>
-                              {tag.name}
-                            </span>
-                          ))}
-                          {task.projectName ? (
-                            <span className="meta-pill task-project">{task.projectName}</span>
-                          ) : null}
-                          {task.deadline ? (
-                            <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
-                          ) : null}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </article>
-              ))}
+                        </div>
+                      </div>
+                    </header>
+                    <ul>
+                      {ownedTasks.map((task) => {
+                        const normalizedStatus = task.status?.trim();
+                        const showStatus =
+                          normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
+
+                        return (
+                          <li key={task.id} className="assignee-task-card">
+                            <div className="assignee-task-heading">
+                              <p className="task-name">{task.name}</p>
+                            </div>
+                            <div className="task-meta-row">
+                              {showStatus ? (
+                                <StatusBadge
+                                  status={task.status}
+                                  color={task.statusColor}
+                                  isClosed={task.isClosed}
+                                />
+                              ) : null}
+                              <span
+                                className="priority-chip"
+                                style={getPriorityStyles(task.priorityColor)}
+                                title={`${task.priority} priority`}
+                              >
+                                <svg
+                                  className="priority-flag-icon"
+                                  viewBox="0 0 16 16"
+                                  role="img"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
+                                    fill="currentColor"
+                                  />
+                                </svg>
+                                <span className="sr-only">{`${task.priority} priority`}</span>
+                              </span>
+                              {(task.tagDetails && task.tagDetails.length > 0
+                                ? task.tagDetails
+                                : task.tags.map((tag) => ({ name: tag, color: null }))
+                              ).map((tag) => (
+                                <span className="tag-pill" key={tag.name} style={getTagStyles(tag.color)}>
+                                  {tag.name}
+                                </span>
+                              ))}
+                              {task.projectName ? (
+                                <span className="meta-pill task-project">{task.projectName}</span>
+                              ) : null}
+                              {task.deadline ? (
+                                <span className="meta-pill task-deadline">Due {formatDate(task.deadline)}</span>
+                              ) : null}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </article>
+                );
+              })}
             </div>
           ) : null}
         </div>
