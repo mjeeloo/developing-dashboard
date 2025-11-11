@@ -269,9 +269,21 @@ const extractDeadlineFromCustomField = (customFields, { deadlineFieldId } = {}) 
 };
 
 const mapTask = (task, options = {}) => {
-  const assigneeNames = (task.assignees || [])
-    .map((assignee) => assignee.username || assignee.email || assignee.id)
+  const normalizedAssignees = (Array.isArray(task.assignees) ? task.assignees : [])
+    .map((assignee) => {
+      const name = assignee.username || assignee.email || assignee.id;
+      if (!name) {
+        return null;
+      }
+
+      return {
+        id: assignee.id,
+        name,
+        avatar: assignee.profilePicture || assignee.avatar || assignee.image || null,
+      };
+    })
     .filter(Boolean);
+  const assigneeNames = normalizedAssignees.map((assignee) => assignee.name);
   const dueDate = task.due_date && task.due_date !== '0' ? Number(task.due_date) : null;
   const statusName = typeof task.status?.status === 'string' ? task.status.status.toLowerCase() : null;
   const statusTypeRaw = typeof task.status?.type === 'string' ? task.status.type.toLowerCase() : null;
@@ -292,6 +304,7 @@ const mapTask = (task, options = {}) => {
     statusColor: task.status?.color || null,
     isClosed,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
+    assignees: normalizedAssignees,
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     priority: task.priority?.priority || 'None',
     priorityColor: task.priority?.color || null,
