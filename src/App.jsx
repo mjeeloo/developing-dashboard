@@ -450,7 +450,11 @@ function App() {
                 <article className="assignee-card" key={assignee}>
                   <header>
                     <h3>{assignee}</h3>
-                    <span className="assignee-count">{ownedTasks.length} tasks</span>
+                    <span className="assignee-count">
+                      {ownedTasks.length === 1
+                        ? '1 task'
+                        : `${ownedTasks.length} tasks`}
+                    </span>
                   </header>
                   <ul>
                     {ownedTasks.map((task) => {
