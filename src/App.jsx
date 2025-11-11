@@ -164,7 +164,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
           const totalHeight = card.offsetHeight;
           const span = Math.max(
             1,
-            Math.round((totalHeight + gap) / (baseRowHeight + gap)),
+            Math.ceil((totalHeight + gap) / (baseRowHeight + gap)),
           );
           card.style.gridRowEnd = `span ${span}`;
         });
