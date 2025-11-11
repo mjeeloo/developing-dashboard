@@ -610,6 +610,20 @@ function App() {
                     const displayName = assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
                     const titleValue = displayName === PLACEHOLDER ? undefined : displayName;
                     const bubbleInitialSource = primaryAssignee?.name ?? assigneeName ?? '';
+                    const deadlineValue = task.deadline ?? task.dueDate;
+                    const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
+                    const isValidDeadline = !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
+                    const nowY = now.getFullYear();
+                    const nowM = now.getMonth();
+                    const nowD = now.getDate();
+                    const isSameDay =
+                      isValidDeadline &&
+                      deadlineDate.getFullYear() === nowY &&
+                      deadlineDate.getMonth() === nowM &&
+                      deadlineDate.getDate() === nowD;
+                    const isOverdue = isValidDeadline && deadlineDate < now && !isSameDay;
+                    const isDueToday = isSameDay;
+                    const deadlineClass = isOverdue ? 'overdue' : (isDueToday ? 'due-today' : undefined);
 
                     return (
                       <tr key={task.id}>
@@ -645,7 +659,11 @@ function App() {
                         <td className="priority-cell">
                           <PriorityBadge priority={task.priority} color={task.priorityColor} />
                         </td>
-                        <td>{formatDeadline(task.deadline ?? task.dueDate)}</td>
+                        <td>
+                          <span className={deadlineClass}>
+                            {formatDeadline(deadlineValue)}
+                          </span>
+                        </td>
                       </tr>
                     );
                   })}
@@ -800,36 +818,49 @@ function App() {
                                 </span>
                               ) : null}
                               {task.deadline ? (
-                                <span className="meta-pill task-deadline">
-                                  <svg
-                                    className="deadline-icon"
-                                    viewBox="0 0 16 16"
-                                    role="img"
-                                    aria-hidden="true"
-                                  >
-                                    <rect
-                                      x="2.25"
-                                      y="3.5"
-                                      width="11.5"
-                                      height="10"
-                                      rx="2.1"
-                                      stroke="currentColor"
-                                      fill="none"
-                                    />
-                                    <path
-                                      d="M2.25 6.75h11.5"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
-                                    <path
-                                      d="M5.25 1.75V3.5M10.75 1.75V3.5"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
-                                  </svg>
-                                  <span className="sr-only">Due {formatDate(task.deadline)}</span>
-                                  <span aria-hidden="true">{formatDate(task.deadline)}</span>
-                                </span>
+                                (() => {
+                                  const dl = new Date(task.deadline);
+                                  const valid = !Number.isNaN(dl.getTime());
+                                  const sameDay =
+                                    valid &&
+                                    dl.getFullYear() === now.getFullYear() &&
+                                    dl.getMonth() === now.getMonth() &&
+                                    dl.getDate() === now.getDate();
+                                  const wasDue = valid && dl < now && !sameDay;
+                                  const cls = wasDue ? 'overdue' : (sameDay ? 'due-today' : '');
+                                  return (
+                                    <span className={`meta-pill task-deadline${cls ? ` ${cls}` : ''}`}>
+                                      <svg
+                                        className="deadline-icon"
+                                        viewBox="0 0 16 16"
+                                        role="img"
+                                        aria-hidden="true"
+                                      >
+                                        <rect
+                                          x="2.25"
+                                          y="3.5"
+                                          width="11.5"
+                                          height="10"
+                                          rx="2.1"
+                                          stroke="currentColor"
+                                          fill="none"
+                                        />
+                                        <path
+                                          d="M2.25 6.75h11.5"
+                                          stroke="currentColor"
+                                          strokeLinecap="round"
+                                        />
+                                        <path
+                                          d="M5.25 1.75V3.5M10.75 1.75V3.5"
+                                          stroke="currentColor"
+                                          strokeLinecap="round"
+                                        />
+                                      </svg>
+                                      <span className="sr-only">Due {formatDate(task.deadline)}</span>
+                                      <span aria-hidden="true">{formatDate(task.deadline)}</span>
+                                    </span>
+                                  );
+                                })()
                               ) : null}
                             </div>
                           </li>

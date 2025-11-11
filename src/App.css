@@ -583,3 +583,23 @@ body.hide-cursor,
 .app.hide-cursor {
   cursor: none !important;
 }
+
+/* Overdue styling */
+.overdue {
+  color: #f87171; /* red-400 */
+}
+.meta-pill.task-deadline.overdue {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* Due today styling */
+.due-today {
+  color: #facc15; /* yellow-400 */
+}
+.meta-pill.task-deadline.due-today {
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.12);
+}
