@@ -6,6 +6,6 @@
 cd ~/developing-dashboard
 git pull
 # sudo npm update
-open https://nederland.fm/radio/joe &
-npm run dev
+npm run dev &
 open http://localhost:5173/ &
+open https://nederland.fm/radio/joe &
