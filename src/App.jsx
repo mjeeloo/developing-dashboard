@@ -638,23 +638,6 @@ function App() {
                                       stroke="currentColor"
                                       strokeLinecap="round"
                                     />
-                                    <path
-                                      d="M5.9 9.25h2.15l-1.05 1.15h.75c.66 0 1.2.54 1.2 1.2c0 .66-.54 1.2-1.2 1.2H5.9"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                    <path
-                                      d="M9.75 9.25l1.15-.75v4.3"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                    <path
-                                      d="M9.7 12.9h1.6"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
                                   </svg>
                                   <span className="sr-only">Due {formatDate(task.deadline)}</span>
                                   <span aria-hidden="true">{formatDate(task.deadline)}</span>
