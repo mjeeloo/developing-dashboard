@@ -705,6 +705,14 @@ function App() {
                                     {task.priority ? `${task.priority} priority` : 'Priority'}
                                   </span>
                                 </span>
+                              {tags.map((tag) => (
+                                <span
+                                className="tag-pill"
+                                key={tag.name}
+                                style={getTagStyles(tag.color)}
+                                >
+                                {tag.name}
+                                </span>
                               ))}
                               {task.projectName ? (
                                 <span className="meta-pill task-project">
@@ -792,35 +800,6 @@ function App() {
             </div>
           ) : null}
         </div>
-                                {tags.map((tag) => (
-                                  <span
-                                    className="tag-pill"
-                                    key={tag.name}
-                                    style={getTagStyles(tag.color)}
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ))}
-                                {task.projectName ? (
-                                  <span className="meta-pill task-project">{task.projectName}</span>
-                                ) : null}
-                                {task.deadline ? (
-                                  <span className="meta-pill task-deadline">
-                                    Due {formatDate(task.deadline)}
-                                  </span>
-                                ) : null}
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : null}
-
-          </div>
         </section>
       </div>
     </div>
