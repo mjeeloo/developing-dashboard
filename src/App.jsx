@@ -158,7 +158,7 @@ const StatusBadge = ({ status, color, isClosed }) => {
 };
 
 const MetricCard = ({ title, value, subtitle }) => (
-  <article className="metric-card">
+  <article className="metric-card surface-card">
     <h3>{title}</h3>
     <p className="metric-value">{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
@@ -351,8 +351,8 @@ function App() {
           <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
             <img src={logo} alt="" />
           </div>
-          <div className="header-time header-card" aria-live="polite">
-            <p className="time-label">Current time</p>
+          <div className="header-time clock-card surface-card" aria-live="polite">
+            <h3 className="time-label">Current time</h3>
             <p className="time-value">{currentTime}</p>
             <p className="time-date">{currentDate}</p>
           </div>

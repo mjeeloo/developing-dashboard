@@ -55,10 +55,16 @@
 }
 
 .header-time {
+  width: 100%;
+}
+
+.clock-card {
+  display: flex;
   flex-direction: column;
+  gap: 0.45rem;
   justify-content: center;
   align-items: flex-start;
-  gap: 0.35rem;
+  height: 100%;
 }
 
 @media (min-width: 860px) {
@@ -73,25 +79,12 @@
   }
 }
 
-.time-label {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-.time-value {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 2.65rem);
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.time-date {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+.surface-card {
+  background: linear-gradient(135deg, rgba(16, 27, 45, 0.85), rgba(var(--accent-secondary-rgb), 0.7));
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55);
+  border: 1px solid var(--border-color);
 }
 
 .metrics {
@@ -104,32 +97,30 @@
 }
 
 .metric-card {
-  background: linear-gradient(135deg, rgba(16, 27, 45, 0.85), rgba(var(--accent-secondary-rgb), 0.7));
-  border-radius: 14px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55);
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  border: 1px solid var(--border-color);
   height: 100%;
 }
 
-.metric-card h3 {
+.metric-card h3,
+.clock-card .time-label {
   margin: 0;
   font-size: 1.05rem;
   color: var(--text-secondary);
   font-weight: 600;
 }
 
-.metric-value {
+.metric-value,
+.clock-card .time-value {
   font-size: clamp(1.95rem, 3.75vw, 2.75rem);
   font-weight: 700;
   margin: 0;
   color: var(--accent);
 }
 
-.metric-subtitle {
+.metric-subtitle,
+.clock-card .time-date {
   margin: 0;
   color: var(--muted);
   font-size: 0.85rem;
