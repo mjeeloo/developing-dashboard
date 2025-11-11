@@ -59,7 +59,6 @@ done
 # --app removes tabs/URL bar and kiosk makes it fullscreen on most desktops
 nohup "$BROWSER_BIN" \
   --app="$APP_URL" \
-  --kiosk \
   --start-fullscreen \
   --incognito \
   --disable-infobars \
