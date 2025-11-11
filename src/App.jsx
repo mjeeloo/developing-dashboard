@@ -278,8 +278,11 @@ const StatusBadge = ({ status, color, isClosed }) => {
   );
 };
 
-const MetricCard = ({ title, value, subtitle, className }) => (
-  <article className={`metric-card surface-card${className ? ` ${className}` : ''}`}>
+const MetricCard = ({ title, value, subtitle, className, ...rest }) => (
+  <article
+    className={`metric-card surface-card${className ? ` ${className}` : ''}`}
+    {...rest}
+  >
     <h3>{title}</h3>
     <p className="metric-value">{value}</p>
     {subtitle ? <p className="metric-subtitle">{subtitle}</p> : null}
@@ -377,6 +380,8 @@ const getTagStyles = (color) => {
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
+  const [christmasMode, setChristmasMode] = useState(false);
+  const toggleChristmas = () => setChristmasMode((v) => !v);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -548,7 +553,7 @@ function App() {
   useMasonryLayout(assigneeGridRef, masonryDependencyKey);
 
   return (
-    <div className="app">
+    <div className="app" data-christmas={christmasMode ? 'on' : 'off'}>
       <div className="app-grid">
         <header className="header">
           <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
@@ -575,7 +580,17 @@ function App() {
             title="Urgent priority tasks"
             value={status === 'success' ? urgentCount : '—'}
             subtitle='Priority set to "Urgent"'
-            className={status === 'success' && urgentCount > 0 ? 'urgent-pulse' : ''}
+            className={`${status === 'success' && urgentCount > 0 ? 'urgent-pulse ' : ''}is-toggle`}
+            onClick={toggleChristmas}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleChristmas();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-pressed={christmasMode}
           />
         </section>
 
@@ -890,6 +905,7 @@ function App() {
         </div>
         </section>
       </div>
+      {christmasMode ? <div className="snow-overlay" aria-hidden="true" /> : null}
     </div>
   );
 }
