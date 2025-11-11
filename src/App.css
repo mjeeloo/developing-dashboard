@@ -368,7 +368,13 @@
 }
 
 .assignee-grid {
-  display: block;
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(clamp(18rem, 28vw, 24rem), 1fr)
+  );
+  align-items: start;
   column-width: 260px;
   column-gap: 1.25rem;
 }
@@ -383,7 +389,6 @@
   background: linear-gradient(180deg, rgba(16, 27, 45, 0.95), rgba(var(--accent-secondary-rgb), 0.65));
   box-shadow: 0 20px 40px rgba(3, 7, 18, 0.45);
   break-inside: avoid;
-  margin-bottom: 1.25rem;
   width: 100%;
 }
 
