@@ -229,18 +229,6 @@ const withAlpha = (color, alpha = 0.2) => {
   return `rgba(${r}, ${g}, ${b}, ${clampAlpha(alpha)})`;
 };
 
-const getStatusStyles = (color) => {
-  if (!color) {
-    return {};
-  }
-
-  return {
-    color,
-    borderColor: withAlpha(color, 0.45) || color,
-    backgroundColor: withAlpha(color, 0.18) || color,
-  };
-};
-
 const getPriorityStyles = (color) => {
   if (!color) {
     return {};
@@ -469,7 +457,6 @@ function App() {
                       const normalizedStatus = task.status?.trim();
                       const showStatus =
                         normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
-                      const statusLabel = normalizedStatus ? normalizedStatus.toUpperCase() : '';
 
                       return (
                         <li key={task.id} className="assignee-task-card">
@@ -478,9 +465,11 @@ function App() {
                           </div>
                           <div className="task-meta-row">
                             {showStatus ? (
-                              <span className="status-pill" style={getStatusStyles(task.statusColor)}>
-                                {statusLabel}
-                              </span>
+                              <StatusBadge
+                                status={task.status}
+                                color={task.statusColor}
+                                isClosed={task.isClosed}
+                              />
                             ) : null}
                           <span
                             className="priority-chip"
