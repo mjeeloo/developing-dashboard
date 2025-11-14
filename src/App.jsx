@@ -377,6 +377,214 @@ const getTagStyles = (color) => {
   };
 };
 
+const getNormalizedStatus = (value) =>
+  typeof value === 'string'
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+    : '';
+
+const CLOSED_STATUS_PATTERNS = [
+  /close/,
+  /done/,
+  /complete/,
+  /resolved/,
+  /fix/,
+  /deploy/,
+  /release/,
+  /archive/,
+  /merge/,
+  /cancel/,
+];
+
+const REVIEW_STATUS_PATTERNS = [
+  /review/,
+  /qa/,
+  /approval/,
+  /sign ?off/,
+  /test(ing)?/,
+  /uat/,
+  /verif/,
+  /validat/,
+  /audit/,
+];
+
+const ACTIVE_STATUS_PATTERNS = [
+  /progress/,
+  /work/,
+  /doing/,
+  /active/,
+  /open/,
+  /investigat/,
+  /respond/,
+  /reply/,
+  /follow ?up/,
+  /escalat/,
+  /schedul/,
+  /implement/,
+  /assign/,
+];
+
+const WAITING_STATUS_PATTERNS = [
+  /block/,
+  /hold/,
+  /wait/,
+  /pending/,
+  /stuck/,
+  /pause/,
+  /await/,
+  /depend/,
+  /need(s)? (info|input)/,
+  /need(ing)? review/,
+  /await(ing)? reply/,
+];
+
+const TODO_STATUS_PATTERNS = [
+  /todo/,
+  /to do/,
+  /backlog/,
+  /ready/,
+  /new/,
+  /unstart/,
+  /plan/,
+  /intake/,
+  /queue/,
+  /idea/,
+  /triage/,
+];
+
+const STATUS_DEFAULT_SORT_VALUE = 5;
+
+const matchesAnyPattern = (value, patterns) =>
+  Boolean(value && patterns.some((pattern) => pattern.test(value)));
+
+const getStatusSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return STATUS_DEFAULT_SORT_VALUE;
+  }
+
+  if (task.isClosed) {
+    return 0;
+  }
+
+  const normalizedStatus = getNormalizedStatus(task.status);
+  const normalizedType = getNormalizedStatus(task.statusType);
+
+  if (
+    matchesAnyPattern(normalizedStatus, CLOSED_STATUS_PATTERNS) ||
+    matchesAnyPattern(normalizedType, CLOSED_STATUS_PATTERNS)
+  ) {
+    return 0;
+  }
+
+  if (
+    matchesAnyPattern(normalizedStatus, REVIEW_STATUS_PATTERNS) ||
+    matchesAnyPattern(normalizedType, REVIEW_STATUS_PATTERNS)
+  ) {
+    return 1;
+  }
+
+  if (
+    matchesAnyPattern(normalizedStatus, ACTIVE_STATUS_PATTERNS) ||
+    matchesAnyPattern(normalizedType, ACTIVE_STATUS_PATTERNS)
+  ) {
+    return 2;
+  }
+
+  if (
+    matchesAnyPattern(normalizedStatus, WAITING_STATUS_PATTERNS) ||
+    matchesAnyPattern(normalizedType, WAITING_STATUS_PATTERNS)
+  ) {
+    return 3;
+  }
+
+  if (
+    matchesAnyPattern(normalizedStatus, TODO_STATUS_PATTERNS) ||
+    matchesAnyPattern(normalizedType, TODO_STATUS_PATTERNS)
+  ) {
+    return 4;
+  }
+
+  return STATUS_DEFAULT_SORT_VALUE;
+};
+
+const PRIORITY_SORT_ORDER = ['urgent', 'high', 'medium', 'normal', 'low', 'none'];
+
+const PRIORITY_CANONICAL_LOOKUP = PRIORITY_SORT_ORDER.reduce((map, key, index) => {
+  map.set(key, index);
+  return map;
+}, new Map());
+
+const PRIORITY_SYNONYMS = new Map([
+  ['critical', 'urgent'],
+  ['highest', 'urgent'],
+  ['immediate', 'urgent'],
+  ['rush', 'urgent'],
+  ['medium', 'medium'],
+  ['normal', 'normal'],
+  ['standard', 'normal'],
+  ['moderate', 'normal'],
+  ['low', 'low'],
+  ['lowest', 'low'],
+  ['minor', 'low'],
+  ['none', 'none'],
+  ['no priority', 'none'],
+]);
+
+const getPrioritySortValue = (priority) => {
+  if (typeof priority !== 'string') {
+    return PRIORITY_SORT_ORDER.length;
+  }
+
+  const normalized = priority.trim().toLowerCase();
+  if (!normalized) {
+    return PRIORITY_SORT_ORDER.length;
+  }
+
+  const canonical = PRIORITY_SYNONYMS.get(normalized) || normalized;
+  const value = PRIORITY_CANONICAL_LOOKUP.get(canonical);
+  return value ?? PRIORITY_SORT_ORDER.length;
+};
+
+const getDeadlineSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const source = task.deadline ?? task.dueDate;
+  if (!source) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const timestamp = Date.parse(source);
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+};
+
+const compareTasks = (a, b) => {
+  const statusA = getStatusSortValue(a);
+  const statusB = getStatusSortValue(b);
+  if (statusA !== statusB) {
+    return statusA - statusB;
+  }
+
+  const priorityA = getPrioritySortValue(a?.priority);
+  const priorityB = getPrioritySortValue(b?.priority);
+  if (priorityA !== priorityB) {
+    return priorityA - priorityB;
+  }
+
+  const deadlineA = getDeadlineSortValue(a);
+  const deadlineB = getDeadlineSortValue(b);
+  if (deadlineA !== deadlineB) {
+    return deadlineA - deadlineB;
+  }
+
+  const nameA = typeof a?.name === 'string' ? a.name : '';
+  const nameB = typeof b?.name === 'string' ? b.name : '';
+  return nameA.localeCompare(nameB);
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
@@ -461,13 +669,11 @@ function App() {
     [tasks],
   );
 
-  const supportTasks = useMemo(
-    () =>
-      activeTasks.filter(
-        (task) => Array.isArray(task.tags) && task.tags.includes('Support'),
-      ),
-    [activeTasks],
-  );
+  const supportTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => Array.isArray(task.tags) && task.tags.includes('Support'))
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const vulnerabilityCount = useMemo(
     () =>
@@ -494,13 +700,13 @@ function App() {
     [activeTasks],
   );
 
-  const assignedTasks = useMemo(
-    () =>
-      activeTasks.filter((task) => {
+  const assignedTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => {
         return Boolean(task.assignee);
-      }),
-    [activeTasks],
-  );
+      })
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
