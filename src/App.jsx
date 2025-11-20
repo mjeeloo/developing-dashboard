@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import logo from "./assets/logo.svg";
 import { useClickUpTasks } from "./hooks/useClickUpTasks.js";
+import AudioPlayer from "./components/AudioPlayer.jsx";
 
 const PLACEHOLDER = "—";
 
@@ -660,22 +661,6 @@ function App() {
     };
   }, [isRadioOpen]);
 
-  useEffect(() => {
-    const iframe = document.querySelector(".radio-iframe-container iframe");
-    const target = document.getElementById("radio-embed-target");
-    const container = document.querySelector(".radio-iframe-container");
-
-    if (!iframe || !target || !container) return;
-
-    if (isRadioOpen) {
-      // Move iframe to modal when open
-      target.appendChild(iframe);
-    } else {
-      // Move iframe back to hidden container when closed
-      container.appendChild(iframe);
-    }
-  }, [isRadioOpen]);
-
   const currentTime = useMemo(
     () =>
       new Intl.DateTimeFormat("en-US", {
@@ -1013,20 +998,6 @@ function App() {
           </svg>
         </button>
 
-        {/* Radio iframe container - always mounted */}
-        <div
-          className={`radio-iframe-container ${
-            isRadioOpen ? "radio-visible" : "radio-hidden"
-          }`}
-        >
-          <iframe
-            src="https://radio.nl/radio/joe"
-            title="nederland.fm music stations"
-            allow="autoplay; encrypted-media"
-            className="radio-embed"
-          />
-        </div>
-
         {/* Radio modal popup */}
         <div
           className={`radio-modal-overlay ${
@@ -1066,11 +1037,9 @@ function App() {
             <div className="radio-modal-body">
               <article
                 className="surface-card radio-card"
-                aria-label="TuneIn music embed"
+                aria-label="Radio player"
               >
-                <div className="radio-embed-wrapper" id="radio-embed-target">
-                  {/* Iframe will be moved here when modal is open */}
-                </div>
+                {isRadioOpen && <AudioPlayer onClose={closeRadio} />}
               </article>
             </div>
           </div>
