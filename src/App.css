@@ -180,7 +180,7 @@
 .radio-embed-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 200000%;
+  padding-top: 113%;
   overflow: hidden;
   border-radius: 12px;
   background: var(--background-card);
@@ -595,7 +595,7 @@
     grid-template-areas:
       'header metrics'
       'support assignee'
-      'radio assignee';
+      'radio .';
     align-items: start;
   }
 
