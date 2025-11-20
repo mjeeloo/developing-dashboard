@@ -5,9 +5,6 @@ set -euo pipefail
 APP_URL="http://localhost:5173"
 DASH_DIR="$HOME/developing-dashboard"
 
-# Joe NL MP3 stream (works at time of writing; replace if it changes)
-STREAM_URL="https://icecast-qmusic.cdp.triple-it.nl/Joe_nl_mp3"
-
 # Browser: choose chromium or google-chrome
 BROWSER_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
 
@@ -17,22 +14,10 @@ if [[ -z "${BROWSER_BIN}" ]]; then
   exit 1
 fi
 
-if ! command -v mpv >/dev/null 2>&1 && ! command -v cvlc >/dev/null 2>&1; then
-  echo "Install one audio player: 'mpv' or 'vlc' (for 'cvlc')." >&2
-  exit 1
-fi
-
 # Unmute and set volume (PipeWire/PulseAudio)
 if command -v pactl >/dev/null 2>&1; then
   pactl set-sink-mute @DEFAULT_SINK@ 0 || true
   pactl set-sink-volume @DEFAULT_SINK@ 70% || true
-fi
-
-# ---- START RADIO (headless) ----
-if command -v mpv >/dev/null 2>&1; then
-  nohup mpv --no-video --really-quiet "$STREAM_URL" >/dev/null 2>&1 &
-else
-  nohup cvlc --intf dummy --quiet --no-video "$STREAM_URL" >/dev/null 2>&1 &
 fi
 
 # ---- UPDATE & START DEV SERVER ----
@@ -55,7 +40,7 @@ for i in {1..60}; do
   sleep 1
 done
 
-# ---- OPEN IN KIOSK/FULLSCREEN ----
+# ---- OPEN IN FULLSCREEN ----
 # --app removes tabs/URL bar and kiosk makes it fullscreen on most desktops
 nohup "$BROWSER_BIN" \
   --app="$APP_URL" \
@@ -64,6 +49,3 @@ nohup "$BROWSER_BIN" \
   --disable-infobars \
   --autoplay-policy=no-user-gesture-required \
   >/dev/null 2>&1 &
-
-# (Optional) Hide the mouse cursor if this is a TV display:
-# nohup unclutter --fork --timeout 0 >/dev/null 2>&1 &
