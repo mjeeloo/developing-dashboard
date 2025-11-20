@@ -385,79 +385,64 @@ const getNormalizedStatus = (value) =>
         .replace(/[_-]+/g, ' ')
     : '';
 
-const CLOSED_STATUS_PATTERNS = [
-  /close/,
-  /done/,
-  /complete/,
-  /resolved/,
-  /fix/,
-  /deploy/,
-  /release/,
-  /archive/,
-  /merge/,
-  /cancel/,
+const STATUS_SORT_ORDER = [
+  'complete',
+  'on hold',
+  'in progress',
+  'planned',
+  'to do',
 ];
 
-const REVIEW_STATUS_PATTERNS = [
-  /review/,
-  /qa/,
-  /approval/,
-  /sign ?off/,
-  /test(ing)?/,
-  /uat/,
-  /verif/,
-  /validat/,
-  /audit/,
-];
+const STATUS_CANONICAL_SYNONYMS = new Map([
+  ['closed', 'complete'],
+  ['done', 'complete'],
+  ['completed', 'complete'],
+  ['complete', 'complete'],
+  ['resolved', 'complete'],
+  ['fixed', 'complete'],
+  ['released', 'complete'],
+  ['deployed', 'complete'],
+  ['archived', 'complete'],
+  ['cancelled', 'complete'],
+  ['blocked', 'on hold'],
+  ['blocker', 'on hold'],
+  ['hold', 'on hold'],
+  ['onhold', 'on hold'],
+  ['waiting', 'on hold'],
+  ['pending', 'on hold'],
+  ['stuck', 'on hold'],
+  ['paused', 'on hold'],
+  ['paused for review', 'on hold'],
+  ['awaiting reply', 'on hold'],
+  ['in progress', 'in progress'],
+  ['doing', 'in progress'],
+  ['working', 'in progress'],
+  ['open', 'in progress'],
+  ['active', 'in progress'],
+  ['responding', 'in progress'],
+  ['follow up', 'in progress'],
+  ['implementation', 'in progress'],
+  ['scheduled', 'in progress'],
+  ['scheduled work', 'in progress'],
+  ['planned', 'planned'],
+  ['planning', 'planned'],
+  ['grooming', 'planned'],
+  ['backlog', 'planned'],
+  ['ready', 'planned'],
+  ['queue', 'planned'],
+  ['intake', 'planned'],
+  ['ideation', 'planned'],
+  ['idea', 'planned'],
+  ['prepared', 'planned'],
+  ['to do', 'to do'],
+  ['todo', 'to do'],
+  ['new', 'to do'],
+  ['unstarted', 'to do'],
+  ['not started', 'to do'],
+  ['triage', 'to do'],
+]);
 
-const ACTIVE_STATUS_PATTERNS = [
-  /progress/,
-  /work/,
-  /doing/,
-  /active/,
-  /open/,
-  /investigat/,
-  /respond/,
-  /reply/,
-  /follow ?up/,
-  /escalat/,
-  /schedul/,
-  /implement/,
-  /assign/,
-];
-
-const WAITING_STATUS_PATTERNS = [
-  /block/,
-  /hold/,
-  /wait/,
-  /pending/,
-  /stuck/,
-  /pause/,
-  /await/,
-  /depend/,
-  /need(s)? (info|input)/,
-  /need(ing)? review/,
-  /await(ing)? reply/,
-];
-
-const TODO_STATUS_PATTERNS = [
-  /todo/,
-  /to do/,
-  /backlog/,
-  /ready/,
-  /new/,
-  /unstart/,
-  /plan/,
-  /intake/,
-  /queue/,
-  /idea/,
-  /triage/,
-];
-
-const STATUS_DEFAULT_SORT_VALUE = 5;
-
-const matchesAnyPattern = (value, patterns) =>
-  Boolean(value && patterns.some((pattern) => pattern.test(value)));
+const STATUS_DEFAULT_SORT_VALUE = STATUS_SORT_ORDER.length;
 
 const getStatusSortValue = (task) => {
   if (!task || typeof task !== 'object') {
@@ -471,45 +456,52 @@ const getStatusSortValue = (task) => {
   const normalizedStatus = getNormalizedStatus(task.status);
   const normalizedType = getNormalizedStatus(task.statusType);
 
-  if (
-    matchesAnyPattern(normalizedStatus, CLOSED_STATUS_PATTERNS) ||
-    matchesAnyPattern(normalizedType, CLOSED_STATUS_PATTERNS)
-  ) {
-    return 0;
+  const directLookup = (value) => {
+    if (!value) {
+      return null;
+    }
+
+    if (STATUS_SORT_ORDER.includes(value)) {
+      return value;
+    }
+
+    const synonym = STATUS_CANONICAL_SYNONYMS.get(value);
+    if (synonym) {
+      return synonym;
+    }
+
+    for (const [pattern, canonical] of [
+      [/close/, 'complete'],
+      [/done/, 'complete'],
+      [/complete/, 'complete'],
+      [/resolve/, 'complete'],
+      [/fix/, 'complete'],
+      [/deploy/, 'complete'],
+      [/release/, 'complete'],
+      [/archive/, 'complete'],
+      [/cancel/, 'complete'],
+      [/block|hold|wait|pending|stuck|pause|depend|await/, 'on hold'],
+      [/progress|work|doing|active|open|respond|reply|follow ?up|implement/, 'in progress'],
+      [/plan|ready|queue|backlog|intake|idea|groom/, 'planned'],
+      [/to ?do|todo|new|unstart|triage/, 'to do'],
+    ]) {
+      if (pattern.test(value)) {
+        return canonical;
+      }
+    }
+
+    return null;
+  };
+
+  const resolvedStatus = directLookup(normalizedStatus) || directLookup(normalizedType);
+  if (!resolvedStatus) {
+    return STATUS_DEFAULT_SORT_VALUE;
   }
 
-  if (
-    matchesAnyPattern(normalizedStatus, REVIEW_STATUS_PATTERNS) ||
-    matchesAnyPattern(normalizedType, REVIEW_STATUS_PATTERNS)
-  ) {
-    return 1;
-  }
-
-  if (
-    matchesAnyPattern(normalizedStatus, ACTIVE_STATUS_PATTERNS) ||
-    matchesAnyPattern(normalizedType, ACTIVE_STATUS_PATTERNS)
-  ) {
-    return 2;
-  }
-
-  if (
-    matchesAnyPattern(normalizedStatus, WAITING_STATUS_PATTERNS) ||
-    matchesAnyPattern(normalizedType, WAITING_STATUS_PATTERNS)
-  ) {
-    return 3;
-  }
-
-  if (
-    matchesAnyPattern(normalizedStatus, TODO_STATUS_PATTERNS) ||
-    matchesAnyPattern(normalizedType, TODO_STATUS_PATTERNS)
-  ) {
-    return 4;
-  }
-
-  return STATUS_DEFAULT_SORT_VALUE;
+  return STATUS_SORT_ORDER.indexOf(resolvedStatus);
 };
 
-const PRIORITY_SORT_ORDER = ['urgent', 'high', 'medium', 'normal', 'low', 'none'];
+const PRIORITY_SORT_ORDER = ['urgent', 'high', 'normal', 'low', 'none'];
 
 const PRIORITY_CANONICAL_LOOKUP = PRIORITY_SORT_ORDER.reduce((map, key, index) => {
   map.set(key, index);
@@ -521,10 +513,11 @@ const PRIORITY_SYNONYMS = new Map([
   ['highest', 'urgent'],
   ['immediate', 'urgent'],
   ['rush', 'urgent'],
-  ['medium', 'medium'],
+  ['high', 'high'],
   ['normal', 'normal'],
   ['standard', 'normal'],
   ['moderate', 'normal'],
+  ['medium', 'normal'],
   ['low', 'low'],
   ['lowest', 'low'],
   ['minor', 'low'],
