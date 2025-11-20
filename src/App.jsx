@@ -756,7 +756,18 @@ function App() {
       <div className="app-grid">
         <header className="header">
           <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
-            <div className="fireplace-backdrop" aria-hidden="true" />
+            <div className="fireplace-backdrop" aria-hidden="true">
+              <iframe
+                className="fireplace-embed"
+                src="https://www.youtube.com/embed/RDfjXj5EGqI?autoplay=1&mute=1&controls=0&loop=1&playlist=RDfjXj5EGqI&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3"
+                title="Fireplace background video"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                referrerPolicy="no-referrer"
+                frameBorder="0"
+                aria-hidden="true"
+                tabIndex={-1}
+              />
+            </div>
             <img src={logo} alt="" />
           </div>
           <div className="header-time clock-card surface-card" aria-live="polite">
