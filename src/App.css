@@ -14,6 +14,7 @@
     'header'
     'metrics'
     'support'
+    'radio'
     'assignee';
 }
 
@@ -141,6 +142,10 @@
   grid-area: assignee;
 }
 
+.radio-panel {
+  grid-area: radio;
+}
+
 .panel-header {
   padding: 1.5rem 1.75rem 0;
 }
@@ -159,6 +164,121 @@
 
 .panel-body {
   padding: 1.5rem 1.75rem 2rem;
+}
+
+.radio-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radio-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.radio-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.radio-title {
+  margin: 0.15rem 0 0;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.radio-description {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+}
+
+.radio-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.radio-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.14);
+}
+
+.station-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.station-pill {
+  background: var(--panel-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: min(18rem, 100%);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.station-pill:hover,
+.station-pill:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.08);
+  outline: none;
+}
+
+.station-pill.is-active {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  background: rgba(var(--accent-rgb), 0.14);
+  box-shadow: 0 12px 30px rgba(3, 7, 18, 0.45);
+  transform: translateY(-1px);
+}
+
+.station-name {
+  font-weight: 700;
+}
+
+.station-meta {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.radio-player {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.player-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.audio-control {
+  width: 100%;
+  accent-color: var(--accent);
 }
 
 .table-wrapper {
@@ -560,7 +680,8 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'header metrics'
-      'support assignee';
+      'support assignee'
+      'radio assignee';
     align-items: start;
   }
 

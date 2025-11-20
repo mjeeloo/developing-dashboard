@@ -385,6 +385,27 @@ const getNormalizedStatus = (value) =>
         .replace(/[_-]+/g, ' ')
     : '';
 
+const RADIO_STATIONS = [
+  {
+    id: 'bbc-radio-1',
+    name: 'BBC Radio 1',
+    description: 'New music, chart hits, and live shows from the UK.',
+    streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
+  },
+  {
+    id: 'lofi',
+    name: 'Lofi Girl',
+    description: 'Chilled beats to help you focus and stay in flow.',
+    streamUrl: 'https://stream.zeno.fm/fbr92p1k8rhvv',
+  },
+  {
+    id: 'smooth-jazz',
+    name: 'Smooth Jazz',
+    description: 'Easy listening with a mix of jazz standards.',
+    streamUrl: 'https://stream-uk1.radioparadise.com/jazz-320',
+  },
+];
+
 const STATUS_SORT_ORDER = [
   'complete',
   'on hold',
@@ -582,6 +603,7 @@ function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
   const [christmasMode, setChristmasMode] = useState(false);
+  const [selectedStationId, setSelectedStationId] = useState(RADIO_STATIONS[0].id);
   const toggleChristmas = () => setChristmasMode((v) => !v);
 
   useEffect(() => {
@@ -656,6 +678,13 @@ function App() {
       }).format(now),
     [now],
   );
+
+  const selectedStation = useMemo(() => {
+    return (
+      RADIO_STATIONS.find((station) => station.id === selectedStationId) ||
+      RADIO_STATIONS[0]
+    );
+  }, [selectedStationId]);
 
   const activeTasks = useMemo(
     () => tasks.filter((task) => !task.isClosed),
@@ -900,6 +929,61 @@ function App() {
                 </table>
               </div>
             ) : null}
+          </div>
+        </section>
+
+        <section className="panel radio-panel" aria-labelledby="radio-heading">
+          <div className="panel-header">
+            <h2 id="radio-heading">Radio player</h2>
+            <p className="panel-subtitle">Pick a station and listen while you work.</p>
+          </div>
+          <div className="panel-body">
+            <div className="radio-card surface-card">
+              <div className="radio-card-header">
+                <div>
+                  <p className="radio-label">Now playing</p>
+                  <p className="radio-title">{selectedStation.name}</p>
+                  <p className="radio-description">{selectedStation.description}</p>
+                </div>
+                <div className="radio-chip" aria-hidden="true">
+                  <span className="radio-dot" />
+                  Live
+                </div>
+              </div>
+              <div className="station-list" role="list">
+                {RADIO_STATIONS.map((station) => {
+                  const isActive = station.id === selectedStation.id;
+                  return (
+                    <button
+                      type="button"
+                      role="listitem"
+                      key={station.id}
+                      className={`station-pill${isActive ? ' is-active' : ''}`}
+                      onClick={() => setSelectedStationId(station.id)}
+                      aria-pressed={isActive}
+                    >
+                      <span className="station-name">{station.name}</span>
+                      <span className="station-meta">{station.description}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="radio-player">
+                <label className="player-label" htmlFor="radio-player">
+                  Player controls
+                </label>
+                <audio
+                  key={selectedStation.id}
+                  id="radio-player"
+                  className="audio-control"
+                  controls
+                  preload="none"
+                >
+                  <source src={selectedStation.streamUrl} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            </div>
           </div>
         </section>
 
