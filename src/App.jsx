@@ -906,14 +906,13 @@ function App() {
         <section className="panel radio-panel" aria-labelledby="radio-heading">
           <div className="panel-header">
             <h2 id="radio-heading">Radio</h2>
-            <p className="panel-subtitle">Embedded TuneIn music page.</p>
           </div>
           <div className="panel-body radio-body">
             <article className="surface-card radio-card" aria-label="TuneIn music embed">
               <div className="radio-embed-wrapper">
                 <iframe
-                  src="https://tunein.com/radio/music/"
-                  title="TuneIn music stations"
+                  src="https://nederland.fm/"
+                  title="nederland.fm music stations"
                   allow="autoplay; encrypted-media"
                   loading="lazy"
                   className="radio-embed"
