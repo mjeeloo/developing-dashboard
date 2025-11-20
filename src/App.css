@@ -14,6 +14,7 @@
     'header'
     'metrics'
     'support'
+    'radio'
     'assignee';
 }
 
@@ -138,6 +139,10 @@
   grid-area: support;
 }
 
+.radio-panel {
+  grid-area: radio;
+}
+
 .assignee-panel {
   grid-area: assignee;
 }
@@ -160,6 +165,74 @@
 
 .panel-body {
   padding: 1.5rem 1.75rem 2rem;
+}
+
+.radio-body {
+  display: grid;
+}
+
+.radio-card {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.station-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.65rem;
+}
+
+.station-button {
+  text-align: left;
+  background: rgba(var(--accent-secondary-rgb), 0.25);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.station-button:hover,
+.station-button:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 12px 28px rgba(3, 7, 18, 0.45);
+  transform: translateY(-1px);
+}
+
+.station-button.is-active {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+  box-shadow: 0 18px 36px rgba(3, 7, 18, 0.55), inset 0 0 0 1px rgba(var(--accent-rgb), 0.35);
+}
+
+.station-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.station-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.audio-wrapper {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.station-now-playing {
+  margin: 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.audio-wrapper audio {
+  width: 100%;
+  max-width: 100%;
 }
 
 .table-wrapper {
@@ -561,7 +634,9 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'header metrics'
-      'support assignee';
+      'support support'
+      'radio radio'
+      'assignee assignee';
     align-items: start;
   }
 
@@ -724,6 +799,7 @@ body.hide-cursor,
 [data-christmas="on"] .clock-card::before,
 [data-christmas="on"] .metric-card::before,
 [data-christmas="on"] .panel.support-panel::before,
+[data-christmas="on"] .panel.radio-panel::before,
 [data-christmas="on"] .panel.assignee-panel::before {
   content: "";
   position: absolute;
