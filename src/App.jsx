@@ -584,6 +584,27 @@ function App() {
   const [christmasMode, setChristmasMode] = useState(false);
   const toggleChristmas = () => setChristmasMode((v) => !v);
 
+  const fireplaceVideoSrc = useMemo(() => {
+    const params = new URLSearchParams({
+      autoplay: '1',
+      mute: '1',
+      controls: '0',
+      loop: '1',
+      playlist: 'RDfjXj5EGqI',
+      modestbranding: '1',
+      playsinline: '1',
+      rel: '0',
+      iv_load_policy: '3',
+    });
+
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    if (origin) {
+      params.set('origin', origin);
+    }
+
+    return `https://www.youtube.com/embed/RDfjXj5EGqI?${params.toString()}`;
+  }, []);
+
   useEffect(() => {
     const interval = window.setInterval(() => {
       setNow(new Date());
@@ -759,7 +780,7 @@ function App() {
             <div className="fireplace-backdrop" aria-hidden="true">
               <iframe
                 className="fireplace-embed"
-                src="https://www.youtube.com/embed/RDfjXj5EGqI?autoplay=1&mute=1&controls=0&loop=1&playlist=RDfjXj5EGqI&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3"
+                src={fireplaceVideoSrc}
                 title="Fireplace background video"
                 allow="autoplay; encrypted-media; picture-in-picture"
                 referrerPolicy="no-referrer"
