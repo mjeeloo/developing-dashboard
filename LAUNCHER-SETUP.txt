@@ -1,0 +1,36 @@
+DEVELOPING DASHBOARD - LAUNCHER SETUP
+=====================================
+
+Voor Raspberry Pi / Linux gebruikers
+-------------------------------------
+
+SNELLE INSTALLATIE:
+1. Open een terminal in deze map
+2. Run: bash install-launcher.sh
+3. Klaar! Je hebt nu verschillende manieren om de dashboard te starten
+
+MANIEREN OM DE DASHBOARD TE STARTEN:
+1. Dubbelklik op "launch-dashboard" bestand
+2. Dubbelklik op "developing-dashboard.desktop" op je bureaublad
+3. Zoek "Developing Dashboard" in je applicatiemenu
+
+HANDMATIGE SETUP (als het installatiescript niet werkt):
+1. Maak bestanden executable:
+   chmod +x startup.sh launch-dashboard developing-dashboard.desktop
+
+2. Test door te dubbelklikken op "launch-dashboard"
+
+3. Als je file manager vraagt om bevestiging:
+   - Kies "Execute" of "Uitvoeren"
+   - Of: "Trust and Launch" / "Vertrouwen en starten"
+
+TROUBLESHOOTING:
+- Als niets gebeurt: Check de logs in /tmp/dashboard-startup.log
+- Dev server logs: /tmp/dashboard-dev.log
+- Test handmatig vanuit terminal: ./launch-dashboard
+
+VEREISTEN:
+- Node.js en npm geïnstalleerd
+- Chromium of Google Chrome browser
+- Git (voor automatische updates)
+
