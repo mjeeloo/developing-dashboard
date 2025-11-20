@@ -793,115 +793,138 @@ function App() {
           />
         </section>
 
-        <section className="panel support-panel" aria-labelledby="support-tasks-heading">
-          <div className="panel-header">
-            <h2 id="support-tasks-heading">Support tasks</h2>
-          </div>
-          <div className="panel-body">
-            {status === 'loading' ? (
-              <p className="status-message" role="status">
-                Loading tasks from ClickUp…
-              </p>
-            ) : null}
-            {status === 'error' ? (
-              <p className="status-message error" role="alert">
-                {error?.message ?? 'Unable to load tasks from ClickUp.'}
-              </p>
-            ) : null}
-            {status === 'success' && supportTasks.length === 0 ? (
-              <p className="status-message" role="status">
-                No tasks with the 'Support' tag are currently open.
-              </p>
-            ) : null}
-            {supportTasks.length > 0 ? (
-              <div className="table-wrapper">
-                <table className="support-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Task</th>
-                      <th scope="col">Status</th>
-                      <th scope="col" className="assignee-column">Assignee</th>
-                      <th scope="col" className="project-column">Project</th>
-                      <th scope="col">Priority</th>
-                      <th scope="col">Deadline</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {supportTasks.map((task) => {
-                    const primaryAssignee =
-                      Array.isArray(task.assignees) && task.assignees.length > 0
-                        ? task.assignees[0]
-                        : null;
-                    const assigneeName =
-                      typeof task.assignee === 'string' && task.assignee.trim().length > 0
-                        ? task.assignee
-                        : null;
-                    const displayName = assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
-                    const titleValue = displayName === PLACEHOLDER ? undefined : displayName;
-                    const bubbleInitialSource = primaryAssignee?.name ?? assigneeName ?? '';
-                    const deadlineValue = task.deadline ?? task.dueDate;
-                    const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
-                    const isValidDeadline = !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
-                    const nowY = now.getFullYear();
-                    const nowM = now.getMonth();
-                    const nowD = now.getDate();
-                    const isSameDay =
-                      isValidDeadline &&
-                      deadlineDate.getFullYear() === nowY &&
-                      deadlineDate.getMonth() === nowM &&
-                      deadlineDate.getDate() === nowD;
-                    const isOverdue = isValidDeadline && deadlineDate < now && !isSameDay;
-                    const isDueToday = isSameDay;
-                    const deadlineClass = isOverdue ? 'overdue' : (isDueToday ? 'due-today' : undefined);
-
-                    return (
-                      <tr key={task.id}>
-                        <th scope="row" className="task-cell">
-                          <span className="task-name">{task.name}</span>
-                        </th>
-                        <td className="status-cell">
-                          <StatusBadge
-                            status={task.status}
-                            color={task.statusColor}
-                            isClosed={task.isClosed}
-                          />
-                        </td>
-                        <td className="assignee-column">
-                          {primaryAssignee || assigneeName ? (
-                            <div className="assignee-cell">
-                              <div className="assignee-bubble" aria-hidden="true">
-                                {primaryAssignee?.avatar ? (
-                                  <img src={primaryAssignee.avatar} alt="" />
-                                ) : (
-                                  <span>{getInitials(bubbleInitialSource)}</span>
-                                )}
-                              </div>
-                              <span className="assignee-name" title={titleValue}>
-                                {displayName}
-                              </span>
-                            </div>
-                          ) : (
-                            PLACEHOLDER
-                          )}
-                        </td>
-                        <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
-                        <td className="priority-cell">
-                          <PriorityBadge priority={task.priority} color={task.priorityColor} />
-                        </td>
-                        <td>
-                          <span className={deadlineClass}>
-                            {formatDeadline(deadlineValue)}
-                          </span>
-                        </td>
+        <div className="panel-stack">
+          <section className="panel support-panel" aria-labelledby="support-heading">
+            <div className="panel-header">
+              <h2 id="support-heading">Support tasks</h2>
+              <p className="panel-subtitle">Latest support requests with owners and SLAs.</p>
+            </div>
+            <div className="panel-body">
+              {status === 'loading' ? (
+                <p className="status-message" role="status">
+                  Loading tasks from ClickUp…
+                </p>
+              ) : null}
+              {status === 'error' ? (
+                <p className="status-message error" role="alert">
+                  {error?.message ?? 'Unable to load tasks from ClickUp.'}
+                </p>
+              ) : null}
+              {status === 'success' && Array.isArray(supportTasks) && supportTasks.length === 0 ? (
+                <p className="status-message" role="status">
+                  No tasks available for the support queue.
+                </p>
+              ) : null}
+              {Array.isArray(supportTasks) && supportTasks.length > 0 ? (
+                <div className="table-wrapper">
+                  <table className="support-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Task</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" className="assignee-column">Assignee</th>
+                        <th scope="col" className="project-column">Project</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Deadline</th>
                       </tr>
-                    );
-                  })}
-                  </tbody>
-                </table>
-              </div>
-            ) : null}
-          </div>
-        </section>
+                    </thead>
+                    <tbody>
+                    {supportTasks.map((task) => {
+                      const primaryAssignee =
+                        Array.isArray(task.assignees) && task.assignees.length > 0
+                          ? task.assignees[0]
+                          : null;
+                      const assigneeName =
+                        typeof task.assignee === 'string' && task.assignee.trim().length > 0
+                          ? task.assignee
+                          : null;
+                      const displayName = assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
+                      const titleValue = displayName === PLACEHOLDER ? undefined : displayName;
+                      const bubbleInitialSource = primaryAssignee?.name ?? assigneeName ?? '';
+                      const deadlineValue = task.deadline ?? task.dueDate;
+                      const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
+                      const isValidDeadline = !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
+                      const nowY = now.getFullYear();
+                      const nowM = now.getMonth();
+                      const nowD = now.getDate();
+                      const isSameDay =
+                        isValidDeadline &&
+                        deadlineDate.getFullYear() === nowY &&
+                        deadlineDate.getMonth() === nowM &&
+                        deadlineDate.getDate() === nowD;
+                      const isOverdue = isValidDeadline && deadlineDate < now && !isSameDay;
+                      const isDueToday = isSameDay;
+                      const deadlineClass = isOverdue ? 'overdue' : (isDueToday ? 'due-today' : undefined);
+
+                      return (
+                        <tr key={task.id}>
+                          <th scope="row" className="task-cell">
+                            <span className="task-name">{task.name}</span>
+                          </th>
+                          <td className="status-cell">
+                            <StatusBadge
+                              status={task.status}
+                              color={task.statusColor}
+                              isClosed={task.isClosed}
+                            />
+                          </td>
+                          <td className="assignee-column">
+                            {primaryAssignee || assigneeName ? (
+                              <div className="assignee-cell">
+                                <div className="assignee-bubble" aria-hidden="true">
+                                  {primaryAssignee?.avatar ? (
+                                    <img src={primaryAssignee.avatar} alt="" />
+                                  ) : (
+                                    <span>{getInitials(bubbleInitialSource)}</span>
+                                  )}
+                                </div>
+                                <span className="assignee-name" title={titleValue}>
+                                  {displayName}
+                                </span>
+                              </div>
+                            ) : (
+                              PLACEHOLDER
+                            )}
+                          </td>
+                          <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
+                          <td className="priority-cell">
+                            <PriorityBadge priority={task.priority} color={task.priorityColor} />
+                          </td>
+                          <td>
+                            <span className={deadlineClass}>
+                              {formatDeadline(deadlineValue)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="panel radio-panel" aria-labelledby="radio-heading">
+            <div className="panel-header">
+              <h2 id="radio-heading">Radio</h2>
+              <p className="panel-subtitle">Embedded TuneIn music page.</p>
+            </div>
+            <div className="panel-body radio-body">
+              <article className="surface-card radio-card" aria-label="TuneIn music embed">
+                <div className="radio-embed-wrapper">
+                  <iframe
+                    src="https://tunein.com/radio/music/"
+                    title="TuneIn music stations"
+                    allow="autoplay; encrypted-media"
+                    loading="lazy"
+                    className="radio-embed"
+                  />
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
 
         <section className="panel assignee-panel" aria-labelledby="assignee-heading">
           <div className="panel-header">

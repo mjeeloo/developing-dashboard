@@ -13,7 +13,7 @@
   grid-template-areas:
     'header'
     'metrics'
-    'support'
+    'left'
     'assignee';
 }
 
@@ -134,8 +134,10 @@
   border: 1px solid var(--border-color);
 }
 
-.support-panel {
-  grid-area: support;
+.panel-stack {
+  grid-area: left;
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 
 .assignee-panel {
@@ -160,6 +162,33 @@
 
 .panel-body {
   padding: 1.5rem 1.75rem 2rem;
+}
+
+.radio-body {
+  display: grid;
+}
+
+.radio-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.radio-embed-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 62.5%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--background-card);
+  border: 1px solid var(--border-color);
+}
+
+.radio-embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .table-wrapper {
@@ -561,7 +590,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'header metrics'
-      'support assignee';
+      'left assignee';
     align-items: start;
   }
 
@@ -724,6 +753,7 @@ body.hide-cursor,
 [data-christmas="on"] .clock-card::before,
 [data-christmas="on"] .metric-card::before,
 [data-christmas="on"] .panel.support-panel::before,
+[data-christmas="on"] .panel.radio-panel::before,
 [data-christmas="on"] .panel.assignee-panel::before {
   content: "";
   position: absolute;
