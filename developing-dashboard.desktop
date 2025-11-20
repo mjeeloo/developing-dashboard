@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Developing Workspace Dashboard
+Comment=Start the Developing workspace dashboard in a fullscreen Chromium window
+Exec=/bin/bash -c "exec /bin/bash \"$HOME/developing-dashboard/startup.sh\""
+Icon=utilities-terminal
+Terminal=false
+Categories=Utility;Network;
+StartupNotify=false

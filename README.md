@@ -83,3 +83,35 @@ The dashboard relies on the following npm packages:
 - [`react-dom`](https://www.npmjs.com/package/react-dom)
 - [`vite`](https://www.npmjs.com/package/vite)
 - [`@vitejs/plugin-react`](https://www.npmjs.com/package/@vitejs/plugin-react)
+
+## Linux desktop entry
+
+You can launch the dashboard with a desktop shortcut that calls the bundled `startup.sh` script:
+
+1. Make sure the startup script is executable (the launcher runs it directly):
+   ```bash
+   chmod +x ~/developing-dashboard/startup.sh
+   ```
+2. Copy the provided `.desktop` file into your local applications directory:
+   ```bash
+   install -Dm755 developing-dashboard.desktop ~/.local/share/applications/developing-dashboard.desktop
+   ```
+3. If your clone lives somewhere other than `$HOME/developing-dashboard`, edit the `Exec` path in
+   `~/.local/share/applications/developing-dashboard.desktop` to point at your checkout. When you
+   run `startup.sh` directly, it automatically uses the directory it lives in, but the launcher
+   still needs the right path to the script itself.
+4. Update your desktop database so the new shortcut appears in your menu:
+   ```bash
+   update-desktop-database ~/.local/share/applications
+   ```
+5. If the shortcut still does not launch, check `/tmp/developing-dashboard-start.log` for error
+   messages, confirm the `Exec` path matches your clone location, and verify that `startup.sh` is
+   executable.
+
+### Pinning to the Xfce task bar
+
+1. Open the Xfce Applications Menu, find **Developing Workspace Dashboard**, and drag it onto the
+   panel to create a launcher; or right-click the entry and choose **Add to Panel** if available.
+2. Alternatively, right-click an empty section of the panel, select **Panel → Add New Items… →
+   Launcher**, then use **Add Application** to pick the Developing Workspace Dashboard entry.
+3. Reorder the launcher as desired by right-clicking it and choosing **Move**.
