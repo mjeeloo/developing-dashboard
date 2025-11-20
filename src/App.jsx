@@ -903,6 +903,25 @@ function App() {
           </div>
         </section>
 
+        <section className="panel radio-panel" aria-labelledby="radio-heading">
+          <div className="panel-header">
+            <h2 id="radio-heading">Radio</h2>
+          </div>
+          <div className="panel-body radio-body">
+            <article className="surface-card radio-card" aria-label="TuneIn music embed">
+              <div className="radio-embed-wrapper">
+                <iframe
+                  src="https://radio.nl/radio/joe"
+                  title="nederland.fm music stations"
+                  allow="autoplay; encrypted-media"
+                  loading="lazy"
+                  className="radio-embed"
+                />
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section className="panel assignee-panel" aria-labelledby="assignee-heading">
           <div className="panel-header">
             <h2 id="assignee-heading">Tasks by assignee</h2>
