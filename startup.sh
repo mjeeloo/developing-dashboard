@@ -17,7 +17,7 @@ fi
 # Unmute and set volume (PipeWire/PulseAudio)
 if command -v pactl >/dev/null 2>&1; then
   pactl set-sink-mute @DEFAULT_SINK@ 0 || true
-  pactl set-sink-volume @DEFAULT_SINK@ 70% || true
+  pactl set-sink-volume @DEFAULT_SINK@ 50% || true
 fi
 
 # ---- UPDATE & START DEV SERVER ----
