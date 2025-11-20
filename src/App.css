@@ -174,12 +174,13 @@
 .radio-card {
   display: grid;
   gap: 1rem;
+  padding: 0px;
 }
 
 .radio-embed-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 62.5%;
+  padding-top: 200000%;
   overflow: hidden;
   border-radius: 12px;
   background: var(--background-card);
@@ -593,9 +594,8 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'header metrics'
-      'support support'
-      'radio radio'
-      'assignee assignee';
+      'support assignee'
+      'radio assignee';
     align-items: start;
   }
 
