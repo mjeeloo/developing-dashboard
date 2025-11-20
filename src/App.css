@@ -151,7 +151,7 @@
 
 .video-panel {
   grid-area: video;
-  align-self: start;
+  align-self: flex-start;
 }
 
 .radio-panel {
@@ -184,12 +184,14 @@
 
 .video-body {
   display: grid;
+  align-items: start;
 }
 
 .video-card {
   display: grid;
   gap: 1rem;
   padding: 0px;
+  align-self: start;
 }
 
 .video-embed-wrapper {
