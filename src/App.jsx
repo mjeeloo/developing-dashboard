@@ -1,22 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import './App.css';
-import logo from './assets/logo.svg';
-import { useClickUpTasks } from './hooks/useClickUpTasks.js';
+import { useEffect, useMemo, useRef, useState } from "react";
+import "./App.css";
+import logo from "./assets/logo.svg";
+import { useClickUpTasks } from "./hooks/useClickUpTasks.js";
 
-const PLACEHOLDER = '—';
+const PLACEHOLDER = "—";
 
 const getInitials = (name) => {
-  if (typeof name !== 'string' || name.trim().length === 0) {
-    return '';
+  if (typeof name !== "string" || name.trim().length === 0) {
+    return "";
   }
 
-  const segments = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const segments = name.trim().split(/\s+/).filter(Boolean);
 
   if (segments.length === 0) {
-    return '';
+    return "";
   }
 
   const [first, second] = segments;
@@ -28,8 +25,8 @@ const getInitials = (name) => {
 };
 
 const capitalizeWords = (value) => {
-  if (typeof value !== 'string') {
-    return '';
+  if (typeof value !== "string") {
+    return "";
   }
 
   const formatSegment = (segment) => {
@@ -47,12 +44,12 @@ const capitalizeWords = (value) => {
   return value
     .split(/\s+/)
     .filter(Boolean)
-    .map((word) => word.split('-').map(formatSegment).join('-'))
-    .join(' ');
+    .map((word) => word.split("-").map(formatSegment).join("-"))
+    .join(" ");
 };
 
 const normalizeHexColor = (value) => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -60,9 +57,9 @@ const normalizeHexColor = (value) => {
   if (/^#([0-9a-f]{3})$/i.test(trimmed)) {
     return `#${trimmed
       .slice(1)
-      .split('')
+      .split("")
       .map((char) => char + char)
-      .join('')}`.toUpperCase();
+      .join("")}`.toUpperCase();
   }
 
   if (/^#([0-9a-f]{6})$/i.test(trimmed)) {
@@ -92,30 +89,32 @@ const hexToRgba = (hex, alpha) => {
 const createChipStyle = (accentColor, fallbackAccent) => {
   const resolvedAccent = accentColor || fallbackAccent;
   const normalizedAccent = normalizeHexColor(resolvedAccent);
-  const style = { '--chip-accent': resolvedAccent || '#38BDF8' };
+  const style = { "--chip-accent": resolvedAccent || "#38BDF8" };
 
   if (normalizedAccent) {
-    style['--chip-bg'] = hexToRgba(normalizedAccent, 0.2);
-    style['--chip-border'] = hexToRgba(normalizedAccent, 0.35);
+    style["--chip-bg"] = hexToRgba(normalizedAccent, 0.2);
+    style["--chip-border"] = hexToRgba(normalizedAccent, 0.35);
   }
 
   return style;
 };
 
 const PRIORITY_FALLBACK_COLORS = {
-  urgent: '#EF4444',
-  high: '#F97316',
-  normal: '#38BDF8',
-  medium: '#38BDF8',
-  low: '#22C55E',
-  none: '#64748B',
+  urgent: "#EF4444",
+  high: "#F97316",
+  normal: "#38BDF8",
+  medium: "#38BDF8",
+  low: "#22C55E",
+  none: "#64748B",
 };
 
 const getPriorityPresentation = (priority, color) => {
-  const normalized = typeof priority === 'string' ? priority.trim().toLowerCase() : '';
-  const key = normalized || 'none';
-  const label = capitalizeWords(key) || 'None';
-  const fallbackAccent = PRIORITY_FALLBACK_COLORS[key] || PRIORITY_FALLBACK_COLORS.none;
+  const normalized =
+    typeof priority === "string" ? priority.trim().toLowerCase() : "";
+  const key = normalized || "none";
+  const label = capitalizeWords(key) || "None";
+  const fallbackAccent =
+    PRIORITY_FALLBACK_COLORS[key] || PRIORITY_FALLBACK_COLORS.none;
   const accent = normalizeHexColor(color) || fallbackAccent;
 
   return {
@@ -126,24 +125,24 @@ const getPriorityPresentation = (priority, color) => {
 
 const deriveStatusFallbackColor = (status, isClosed) => {
   if (isClosed) {
-    return '#22C55E';
+    return "#22C55E";
   }
 
-  const normalized = typeof status === 'string' ? status.toLowerCase() : '';
+  const normalized = typeof status === "string" ? status.toLowerCase() : "";
   if (/block|hold|wait/i.test(normalized)) {
-    return '#F97316';
+    return "#F97316";
   }
   if (/review|approval/i.test(normalized)) {
-    return '#F59E0B';
+    return "#F59E0B";
   }
   if (/progress|working|doing/i.test(normalized)) {
-    return '#38BDF8';
+    return "#38BDF8";
   }
   if (/todo|backlog|ready/i.test(normalized)) {
-    return '#6366F1';
+    return "#6366F1";
   }
 
-  return '#38BDF8';
+  return "#38BDF8";
 };
 
 const useMasonryLayout = (containerRef, dependencyKey) => {
@@ -151,8 +150,8 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
     const grid = containerRef.current;
     if (
       !grid ||
-      typeof ResizeObserver === 'undefined' ||
-      typeof MutationObserver === 'undefined'
+      typeof ResizeObserver === "undefined" ||
+      typeof MutationObserver === "undefined"
     ) {
       return undefined;
     }
@@ -167,17 +166,17 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
 
       animationFrameId = requestAnimationFrame(() => {
         animationFrameId = null;
-        const cards = Array.from(grid.children).filter((node) =>
-          node instanceof HTMLElement,
+        const cards = Array.from(grid.children).filter(
+          (node) => node instanceof HTMLElement
         );
 
         if (cards.length === 0) {
-          grid.style.removeProperty('grid-auto-rows');
+          grid.style.removeProperty("grid-auto-rows");
           return;
         }
 
         const computedStyles = getComputedStyle(grid);
-        const gapValue = computedStyles.rowGap || computedStyles.gap || '0';
+        const gapValue = computedStyles.rowGap || computedStyles.gap || "0";
         const gap = Number.parseFloat(gapValue) || 0;
 
         grid.style.gridAutoRows = `${baseRowHeight}px`;
@@ -186,7 +185,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
           const totalHeight = card.getBoundingClientRect().height;
           const span = Math.max(
             1,
-            Math.ceil((totalHeight + gap) / (baseRowHeight + gap)),
+            Math.ceil((totalHeight + gap) / (baseRowHeight + gap))
           );
           card.style.gridRowEnd = `span ${span}`;
         });
@@ -209,7 +208,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
         mutation.removedNodes.forEach((node) => {
           if (node instanceof HTMLElement) {
             resizeObserver.unobserve(node);
-            node.style.removeProperty('grid-row-end');
+            node.style.removeProperty("grid-row-end");
           }
         });
       });
@@ -234,11 +233,11 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
 
       mutationObserver.disconnect();
       resizeObserver.disconnect();
-      grid.style.removeProperty('grid-auto-rows');
+      grid.style.removeProperty("grid-auto-rows");
 
       Array.from(grid.children).forEach((node) => {
         if (node instanceof HTMLElement) {
-          node.style.removeProperty('grid-row-end');
+          node.style.removeProperty("grid-row-end");
         }
       });
     };
@@ -246,7 +245,7 @@ const useMasonryLayout = (containerRef, dependencyKey) => {
 };
 
 const getStatusPresentation = (status, color, isClosed) => {
-  const label = capitalizeWords(status || 'Unknown');
+  const label = capitalizeWords(status || "Unknown");
   const fallbackAccent = deriveStatusFallbackColor(status, isClosed);
   const accent = normalizeHexColor(color) || fallbackAccent;
 
@@ -280,7 +279,7 @@ const StatusBadge = ({ status, color, isClosed }) => {
 
 const MetricCard = ({ title, value, subtitle, className, ...rest }) => (
   <article
-    className={`metric-card surface-card${className ? ` ${className}` : ''}`}
+    className={`metric-card surface-card${className ? ` ${className}` : ""}`}
     {...rest}
   >
     <h3>{title}</h3>
@@ -299,13 +298,13 @@ const formatShortDate = (value, fallback) => {
     return fallback;
   }
 
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
   }).format(date);
 };
 
-const formatDate = (value) => formatShortDate(value, 'No due date');
+const formatDate = (value) => formatShortDate(value, "No due date");
 
 const formatDeadline = (value) => formatShortDate(value, PLACEHOLDER);
 
@@ -320,21 +319,21 @@ const clampAlpha = (value) => {
 };
 
 const withAlpha = (color, alpha = 0.2) => {
-  if (typeof color !== 'string' || color.length === 0) {
+  if (typeof color !== "string" || color.length === 0) {
     return null;
   }
 
   const normalized = color.trim();
-  if (!normalized.startsWith('#')) {
+  if (!normalized.startsWith("#")) {
     return normalized;
   }
 
   let hex = normalized.slice(1);
   if (hex.length === 3) {
     hex = hex
-      .split('')
+      .split("")
       .map((char) => `${char}${char}`)
-      .join('');
+      .join("");
   }
 
   if (hex.length !== 6) {
@@ -378,74 +377,71 @@ const getTagStyles = (color) => {
 };
 
 const getNormalizedStatus = (value) =>
-  typeof value === 'string'
-    ? value
-        .trim()
-        .toLowerCase()
-        .replace(/[_-]+/g, ' ')
-    : '';
+  typeof value === "string"
+    ? value.trim().toLowerCase().replace(/[_-]+/g, " ")
+    : "";
 
 const STATUS_SORT_ORDER = [
-  'complete',
-  'on hold',
-  'in progress',
-  'planned',
-  'to do',
+  "complete",
+  "on hold",
+  "in progress",
+  "planned",
+  "to do",
 ];
 
 const STATUS_CANONICAL_SYNONYMS = new Map([
-  ['closed', 'complete'],
-  ['done', 'complete'],
-  ['completed', 'complete'],
-  ['complete', 'complete'],
-  ['resolved', 'complete'],
-  ['fixed', 'complete'],
-  ['released', 'complete'],
-  ['deployed', 'complete'],
-  ['archived', 'complete'],
-  ['cancelled', 'complete'],
-  ['blocked', 'on hold'],
-  ['blocker', 'on hold'],
-  ['hold', 'on hold'],
-  ['onhold', 'on hold'],
-  ['waiting', 'on hold'],
-  ['pending', 'on hold'],
-  ['stuck', 'on hold'],
-  ['paused', 'on hold'],
-  ['paused for review', 'on hold'],
-  ['awaiting reply', 'on hold'],
-  ['in progress', 'in progress'],
-  ['doing', 'in progress'],
-  ['working', 'in progress'],
-  ['open', 'in progress'],
-  ['active', 'in progress'],
-  ['responding', 'in progress'],
-  ['follow up', 'in progress'],
-  ['implementation', 'in progress'],
-  ['scheduled', 'in progress'],
-  ['scheduled work', 'in progress'],
-  ['planned', 'planned'],
-  ['planning', 'planned'],
-  ['grooming', 'planned'],
-  ['backlog', 'planned'],
-  ['ready', 'planned'],
-  ['queue', 'planned'],
-  ['intake', 'planned'],
-  ['ideation', 'planned'],
-  ['idea', 'planned'],
-  ['prepared', 'planned'],
-  ['to do', 'to do'],
-  ['todo', 'to do'],
-  ['new', 'to do'],
-  ['unstarted', 'to do'],
-  ['not started', 'to do'],
-  ['triage', 'to do'],
+  ["closed", "complete"],
+  ["done", "complete"],
+  ["completed", "complete"],
+  ["complete", "complete"],
+  ["resolved", "complete"],
+  ["fixed", "complete"],
+  ["released", "complete"],
+  ["deployed", "complete"],
+  ["archived", "complete"],
+  ["cancelled", "complete"],
+  ["blocked", "on hold"],
+  ["blocker", "on hold"],
+  ["hold", "on hold"],
+  ["onhold", "on hold"],
+  ["waiting", "on hold"],
+  ["pending", "on hold"],
+  ["stuck", "on hold"],
+  ["paused", "on hold"],
+  ["paused for review", "on hold"],
+  ["awaiting reply", "on hold"],
+  ["in progress", "in progress"],
+  ["doing", "in progress"],
+  ["working", "in progress"],
+  ["open", "in progress"],
+  ["active", "in progress"],
+  ["responding", "in progress"],
+  ["follow up", "in progress"],
+  ["implementation", "in progress"],
+  ["scheduled", "in progress"],
+  ["scheduled work", "in progress"],
+  ["planned", "planned"],
+  ["planning", "planned"],
+  ["grooming", "planned"],
+  ["backlog", "planned"],
+  ["ready", "planned"],
+  ["queue", "planned"],
+  ["intake", "planned"],
+  ["ideation", "planned"],
+  ["idea", "planned"],
+  ["prepared", "planned"],
+  ["to do", "to do"],
+  ["todo", "to do"],
+  ["new", "to do"],
+  ["unstarted", "to do"],
+  ["not started", "to do"],
+  ["triage", "to do"],
 ]);
 
 const STATUS_DEFAULT_SORT_VALUE = STATUS_SORT_ORDER.length;
 
 const getStatusSortValue = (task) => {
-  if (!task || typeof task !== 'object') {
+  if (!task || typeof task !== "object") {
     return STATUS_DEFAULT_SORT_VALUE;
   }
 
@@ -471,19 +467,22 @@ const getStatusSortValue = (task) => {
     }
 
     for (const [pattern, canonical] of [
-      [/close/, 'complete'],
-      [/done/, 'complete'],
-      [/complete/, 'complete'],
-      [/resolve/, 'complete'],
-      [/fix/, 'complete'],
-      [/deploy/, 'complete'],
-      [/release/, 'complete'],
-      [/archive/, 'complete'],
-      [/cancel/, 'complete'],
-      [/block|hold|wait|pending|stuck|pause|depend|await/, 'on hold'],
-      [/progress|work|doing|active|open|respond|reply|follow ?up|implement/, 'in progress'],
-      [/plan|ready|queue|backlog|intake|idea|groom/, 'planned'],
-      [/to ?do|todo|new|unstart|triage/, 'to do'],
+      [/close/, "complete"],
+      [/done/, "complete"],
+      [/complete/, "complete"],
+      [/resolve/, "complete"],
+      [/fix/, "complete"],
+      [/deploy/, "complete"],
+      [/release/, "complete"],
+      [/archive/, "complete"],
+      [/cancel/, "complete"],
+      [/block|hold|wait|pending|stuck|pause|depend|await/, "on hold"],
+      [
+        /progress|work|doing|active|open|respond|reply|follow ?up|implement/,
+        "in progress",
+      ],
+      [/plan|ready|queue|backlog|intake|idea|groom/, "planned"],
+      [/to ?do|todo|new|unstart|triage/, "to do"],
     ]) {
       if (pattern.test(value)) {
         return canonical;
@@ -493,7 +492,8 @@ const getStatusSortValue = (task) => {
     return null;
   };
 
-  const resolvedStatus = directLookup(normalizedStatus) || directLookup(normalizedType);
+  const resolvedStatus =
+    directLookup(normalizedStatus) || directLookup(normalizedType);
   if (!resolvedStatus) {
     return STATUS_DEFAULT_SORT_VALUE;
   }
@@ -501,32 +501,35 @@ const getStatusSortValue = (task) => {
   return STATUS_SORT_ORDER.indexOf(resolvedStatus);
 };
 
-const PRIORITY_SORT_ORDER = ['urgent', 'high', 'normal', 'low', 'none'];
+const PRIORITY_SORT_ORDER = ["urgent", "high", "normal", "low", "none"];
 
-const PRIORITY_CANONICAL_LOOKUP = PRIORITY_SORT_ORDER.reduce((map, key, index) => {
-  map.set(key, index);
-  return map;
-}, new Map());
+const PRIORITY_CANONICAL_LOOKUP = PRIORITY_SORT_ORDER.reduce(
+  (map, key, index) => {
+    map.set(key, index);
+    return map;
+  },
+  new Map()
+);
 
 const PRIORITY_SYNONYMS = new Map([
-  ['critical', 'urgent'],
-  ['highest', 'urgent'],
-  ['immediate', 'urgent'],
-  ['rush', 'urgent'],
-  ['high', 'high'],
-  ['normal', 'normal'],
-  ['standard', 'normal'],
-  ['moderate', 'normal'],
-  ['medium', 'normal'],
-  ['low', 'low'],
-  ['lowest', 'low'],
-  ['minor', 'low'],
-  ['none', 'none'],
-  ['no priority', 'none'],
+  ["critical", "urgent"],
+  ["highest", "urgent"],
+  ["immediate", "urgent"],
+  ["rush", "urgent"],
+  ["high", "high"],
+  ["normal", "normal"],
+  ["standard", "normal"],
+  ["moderate", "normal"],
+  ["medium", "normal"],
+  ["low", "low"],
+  ["lowest", "low"],
+  ["minor", "low"],
+  ["none", "none"],
+  ["no priority", "none"],
 ]);
 
 const getPrioritySortValue = (priority) => {
-  if (typeof priority !== 'string') {
+  if (typeof priority !== "string") {
     return PRIORITY_SORT_ORDER.length;
   }
 
@@ -541,7 +544,7 @@ const getPrioritySortValue = (priority) => {
 };
 
 const getDeadlineSortValue = (task) => {
-  if (!task || typeof task !== 'object') {
+  if (!task || typeof task !== "object") {
     return Number.MAX_SAFE_INTEGER;
   }
 
@@ -573,8 +576,8 @@ const compareTasks = (a, b) => {
     return deadlineA - deadlineB;
   }
 
-  const nameA = typeof a?.name === 'string' ? a.name : '';
-  const nameB = typeof b?.name === 'string' ? b.name : '';
+  const nameA = typeof a?.name === "string" ? a.name : "";
+  const nameB = typeof b?.name === "string" ? b.name : "";
   return nameA.localeCompare(nameB);
 };
 
@@ -582,7 +585,10 @@ function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
   const [christmasMode, setChristmasMode] = useState(false);
+  const [isRadioOpen, setIsRadioOpen] = useState(false);
   const toggleChristmas = () => setChristmasMode((v) => !v);
+  const toggleRadio = () => setIsRadioOpen((v) => !v);
+  const closeRadio = () => setIsRadioOpen(false);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -600,7 +606,7 @@ function App() {
     let timeoutId = null;
 
     const showCursor = () => {
-      root.classList.remove('hide-cursor');
+      root.classList.remove("hide-cursor");
     };
 
     const scheduleHide = () => {
@@ -608,7 +614,7 @@ function App() {
         window.clearTimeout(timeoutId);
       }
       timeoutId = window.setTimeout(() => {
-        root.classList.add('hide-cursor');
+        root.classList.add("hide-cursor");
       }, INACTIVITY_MS);
     };
 
@@ -617,7 +623,7 @@ function App() {
       scheduleHide();
     };
 
-    const events = ['mousemove', 'mousedown', 'touchstart', 'keydown', 'wheel'];
+    const events = ["mousemove", "mousedown", "touchstart", "keydown", "wheel"];
     events.forEach((event) => {
       window.addEventListener(event, onActivity, { passive: true });
     });
@@ -632,65 +638,103 @@ function App() {
       events.forEach((event) => {
         window.removeEventListener(event, onActivity);
       });
-      root.classList.remove('hide-cursor');
+      root.classList.remove("hide-cursor");
     };
   }, []);
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && isRadioOpen) {
+        closeRadio();
+      }
+    };
+
+    if (isRadioOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isRadioOpen]);
+
+  useEffect(() => {
+    const iframe = document.querySelector(".radio-iframe-container iframe");
+    const target = document.getElementById("radio-embed-target");
+    const container = document.querySelector(".radio-iframe-container");
+
+    if (!iframe || !target || !container) return;
+
+    if (isRadioOpen) {
+      // Move iframe to modal when open
+      target.appendChild(iframe);
+    } else {
+      // Move iframe back to hidden container when closed
+      container.appendChild(iframe);
+    }
+  }, [isRadioOpen]);
+
   const currentTime = useMemo(
     () =>
-      new Intl.DateTimeFormat('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
+      new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: false,
       }).format(now),
-    [now],
+    [now]
   );
 
   const currentDate = useMemo(
     () =>
-      new Intl.DateTimeFormat('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
+      new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
       }).format(now),
-    [now],
+    [now]
   );
 
   const activeTasks = useMemo(
     () => tasks.filter((task) => !task.isClosed),
-    [tasks],
+    [tasks]
   );
 
   const supportTasks = useMemo(() => {
     return activeTasks
-      .filter((task) => Array.isArray(task.tags) && task.tags.includes('Support'))
+      .filter(
+        (task) => Array.isArray(task.tags) && task.tags.includes("Support")
+      )
       .sort(compareTasks);
   }, [activeTasks]);
 
   const vulnerabilityCount = useMemo(
     () =>
       activeTasks.filter(
-        (task) => Array.isArray(task.tags) && task.tags.includes('Vulnerability'),
+        (task) =>
+          Array.isArray(task.tags) && task.tags.includes("Vulnerability")
       ).length,
-    [activeTasks],
+    [activeTasks]
   );
 
   const downtimeCount = useMemo(
     () =>
       activeTasks.filter(
-        (task) => Array.isArray(task.tags) && task.tags.includes('Downtime'),
+        (task) => Array.isArray(task.tags) && task.tags.includes("Downtime")
       ).length,
-    [activeTasks],
+    [activeTasks]
   );
 
   const urgentCount = useMemo(
     () =>
       activeTasks.filter(
         (task) =>
-          typeof task.priority === 'string' && task.priority.toLowerCase() === 'urgent',
+          typeof task.priority === "string" &&
+          task.priority.toLowerCase() === "urgent"
       ).length,
-    [activeTasks],
+    [activeTasks]
   );
 
   const assignedTasks = useMemo(() => {
@@ -703,17 +747,20 @@ function App() {
 
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
-      const assigneesArray = Array.isArray(task.assignees) ? task.assignees : [];
+      const assigneesArray = Array.isArray(task.assignees)
+        ? task.assignees
+        : [];
       const hasAssignees = assigneesArray.length > 0;
 
       // Fallback: if no structured assignees are available but a string exists, split it
-      const fallbackAssignees = !hasAssignees && typeof task.assignee === 'string'
-        ? task.assignee
-            .split(',')
-            .map((name) => name.trim())
-            .filter(Boolean)
-            .map((name) => ({ id: name, name, avatar: null }))
-        : [];
+      const fallbackAssignees =
+        !hasAssignees && typeof task.assignee === "string"
+          ? task.assignee
+              .split(",")
+              .map((name) => name.trim())
+              .filter(Boolean)
+              .map((name) => ({ id: name, name, avatar: null }))
+          : [];
 
       const individuals = hasAssignees ? assigneesArray : fallbackAssignees;
       if (individuals.length === 0) {
@@ -746,19 +793,26 @@ function App() {
   const masonryDependencyKey = useMemo(() => {
     return Object.entries(tasksByAssignee)
       .map(([assignee, data]) => `${assignee}:${(data?.tasks || []).length}`)
-      .join('|');
+      .join("|");
   }, [tasksByAssignee]);
 
   useMasonryLayout(assigneeGridRef, masonryDependencyKey);
 
   return (
-    <div className="app" data-christmas={christmasMode ? 'on' : 'off'}>
+    <div className="app" data-christmas={christmasMode ? "on" : "off"}>
       <div className="app-grid">
         <header className="header">
-          <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
+          <div
+            className="header-image header-card"
+            role="img"
+            aria-label="TV dashboard header image"
+          >
             <img src={logo} alt="" />
           </div>
-          <div className="header-time clock-card surface-card" aria-live="polite">
+          <div
+            className="header-time clock-card surface-card"
+            aria-live="polite"
+          >
             <h3 className="time-label">Current time</h3>
             <p className="time-value">{currentTime}</p>
             <p className="time-date">{currentDate}</p>
@@ -767,22 +821,24 @@ function App() {
         <section className="metrics" aria-label="Key risk indicators">
           <MetricCard
             title="Vulnerabilities"
-            value={status === 'success' ? vulnerabilityCount : '—'}
+            value={status === "success" ? vulnerabilityCount : "—"}
             subtitle='Tagged with "Vulnerability"'
           />
           <MetricCard
             title="Downtime follow-ups"
-            value={status === 'success' ? downtimeCount : '—'}
+            value={status === "success" ? downtimeCount : "—"}
             subtitle='Tagged with "Downtime"'
           />
           <MetricCard
             title="Urgent priority tasks"
-            value={status === 'success' ? urgentCount : '—'}
+            value={status === "success" ? urgentCount : "—"}
             subtitle='Priority set to "Urgent"'
-            className={`${status === 'success' && urgentCount > 0 ? 'urgent-pulse ' : ''}is-toggle`}
+            className={`${
+              status === "success" && urgentCount > 0 ? "urgent-pulse " : ""
+            }is-toggle`}
             onClick={toggleChristmas}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 toggleChristmas();
               }
@@ -793,22 +849,25 @@ function App() {
           />
         </section>
 
-        <section className="panel support-panel" aria-labelledby="support-tasks-heading">
+        <section
+          className="panel support-panel"
+          aria-labelledby="support-tasks-heading"
+        >
           <div className="panel-header">
             <h2 id="support-tasks-heading">Support tasks</h2>
           </div>
           <div className="panel-body">
-            {status === 'loading' ? (
+            {status === "loading" ? (
               <p className="status-message" role="status">
                 Loading tasks from ClickUp…
               </p>
             ) : null}
-            {status === 'error' ? (
+            {status === "error" ? (
               <p className="status-message error" role="alert">
-                {error?.message ?? 'Unable to load tasks from ClickUp.'}
+                {error?.message ?? "Unable to load tasks from ClickUp."}
               </p>
             ) : null}
-            {status === 'success' && supportTasks.length === 0 ? (
+            {status === "success" && supportTasks.length === 0 ? (
               <p className="status-message" role="status">
                 No tasks with the 'Support' tag are currently open.
               </p>
@@ -820,82 +879,112 @@ function App() {
                     <tr>
                       <th scope="col">Task</th>
                       <th scope="col">Status</th>
-                      <th scope="col" className="assignee-column">Assignee</th>
-                      <th scope="col" className="project-column">Project</th>
+                      <th scope="col" className="assignee-column">
+                        Assignee
+                      </th>
+                      <th scope="col" className="project-column">
+                        Project
+                      </th>
                       <th scope="col">Priority</th>
                       <th scope="col">Deadline</th>
                     </tr>
                   </thead>
                   <tbody>
-                  {supportTasks.map((task) => {
-                    const primaryAssignee =
-                      Array.isArray(task.assignees) && task.assignees.length > 0
-                        ? task.assignees[0]
+                    {supportTasks.map((task) => {
+                      const primaryAssignee =
+                        Array.isArray(task.assignees) &&
+                        task.assignees.length > 0
+                          ? task.assignees[0]
+                          : null;
+                      const assigneeName =
+                        typeof task.assignee === "string" &&
+                        task.assignee.trim().length > 0
+                          ? task.assignee
+                          : null;
+                      const displayName =
+                        assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
+                      const titleValue =
+                        displayName === PLACEHOLDER ? undefined : displayName;
+                      const bubbleInitialSource =
+                        primaryAssignee?.name ?? assigneeName ?? "";
+                      const deadlineValue = task.deadline ?? task.dueDate;
+                      const deadlineDate = deadlineValue
+                        ? new Date(deadlineValue)
                         : null;
-                    const assigneeName =
-                      typeof task.assignee === 'string' && task.assignee.trim().length > 0
-                        ? task.assignee
-                        : null;
-                    const displayName = assigneeName ?? primaryAssignee?.name ?? PLACEHOLDER;
-                    const titleValue = displayName === PLACEHOLDER ? undefined : displayName;
-                    const bubbleInitialSource = primaryAssignee?.name ?? assigneeName ?? '';
-                    const deadlineValue = task.deadline ?? task.dueDate;
-                    const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
-                    const isValidDeadline = !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
-                    const nowY = now.getFullYear();
-                    const nowM = now.getMonth();
-                    const nowD = now.getDate();
-                    const isSameDay =
-                      isValidDeadline &&
-                      deadlineDate.getFullYear() === nowY &&
-                      deadlineDate.getMonth() === nowM &&
-                      deadlineDate.getDate() === nowD;
-                    const isOverdue = isValidDeadline && deadlineDate < now && !isSameDay;
-                    const isDueToday = isSameDay;
-                    const deadlineClass = isOverdue ? 'overdue' : (isDueToday ? 'due-today' : undefined);
+                      const isValidDeadline =
+                        !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
+                      const nowY = now.getFullYear();
+                      const nowM = now.getMonth();
+                      const nowD = now.getDate();
+                      const isSameDay =
+                        isValidDeadline &&
+                        deadlineDate.getFullYear() === nowY &&
+                        deadlineDate.getMonth() === nowM &&
+                        deadlineDate.getDate() === nowD;
+                      const isOverdue =
+                        isValidDeadline && deadlineDate < now && !isSameDay;
+                      const isDueToday = isSameDay;
+                      const deadlineClass = isOverdue
+                        ? "overdue"
+                        : isDueToday
+                        ? "due-today"
+                        : undefined;
 
-                    return (
-                      <tr key={task.id}>
-                        <th scope="row" className="task-cell">
-                          <span className="task-name">{task.name}</span>
-                        </th>
-                        <td className="status-cell">
-                          <StatusBadge
-                            status={task.status}
-                            color={task.statusColor}
-                            isClosed={task.isClosed}
-                          />
-                        </td>
-                        <td className="assignee-column">
-                          {primaryAssignee || assigneeName ? (
-                            <div className="assignee-cell">
-                              <div className="assignee-bubble" aria-hidden="true">
-                                {primaryAssignee?.avatar ? (
-                                  <img src={primaryAssignee.avatar} alt="" />
-                                ) : (
-                                  <span>{getInitials(bubbleInitialSource)}</span>
-                                )}
+                      return (
+                        <tr key={task.id}>
+                          <th scope="row" className="task-cell">
+                            <span className="task-name">{task.name}</span>
+                          </th>
+                          <td className="status-cell">
+                            <StatusBadge
+                              status={task.status}
+                              color={task.statusColor}
+                              isClosed={task.isClosed}
+                            />
+                          </td>
+                          <td className="assignee-column">
+                            {primaryAssignee || assigneeName ? (
+                              <div className="assignee-cell">
+                                <div
+                                  className="assignee-bubble"
+                                  aria-hidden="true"
+                                >
+                                  {primaryAssignee?.avatar ? (
+                                    <img src={primaryAssignee.avatar} alt="" />
+                                  ) : (
+                                    <span>
+                                      {getInitials(bubbleInitialSource)}
+                                    </span>
+                                  )}
+                                </div>
+                                <span
+                                  className="assignee-name"
+                                  title={titleValue}
+                                >
+                                  {displayName}
+                                </span>
                               </div>
-                              <span className="assignee-name" title={titleValue}>
-                                {displayName}
-                              </span>
-                            </div>
-                          ) : (
-                            PLACEHOLDER
-                          )}
-                        </td>
-                        <td className="project-column">{task.projectName ?? PLACEHOLDER}</td>
-                        <td className="priority-cell">
-                          <PriorityBadge priority={task.priority} color={task.priorityColor} />
-                        </td>
-                        <td>
-                          <span className={deadlineClass}>
-                            {formatDeadline(deadlineValue)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                            ) : (
+                              PLACEHOLDER
+                            )}
+                          </td>
+                          <td className="project-column">
+                            {task.projectName ?? PLACEHOLDER}
+                          </td>
+                          <td className="priority-cell">
+                            <PriorityBadge
+                              priority={task.priority}
+                              color={task.priorityColor}
+                            />
+                          </td>
+                          <td>
+                            <span className={deadlineClass}>
+                              {formatDeadline(deadlineValue)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -903,227 +992,330 @@ function App() {
           </div>
         </section>
 
-        <section className="panel radio-panel" aria-labelledby="radio-heading">
-          <div className="panel-header">
-            <h2 id="radio-heading">Radio</h2>
-          </div>
-          <div className="panel-body radio-body">
-            <article className="surface-card radio-card" aria-label="TuneIn music embed">
-              <div className="radio-embed-wrapper">
-                <iframe
-                  src="https://radio.nl/radio/joe"
-                  title="nederland.fm music stations"
-                  allow="autoplay; encrypted-media"
-                  loading="lazy"
-                  className="radio-embed"
-                />
-              </div>
-            </article>
-          </div>
-        </section>
+        {/* Radio trigger button */}
+        <button
+          className="radio-trigger"
+          onClick={toggleRadio}
+          aria-label="Open radio player"
+          title="Open radio player"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </button>
 
-        <section className="panel assignee-panel" aria-labelledby="assignee-heading">
+        {/* Radio iframe container - always mounted */}
+        <div
+          className={`radio-iframe-container ${
+            isRadioOpen ? "radio-visible" : "radio-hidden"
+          }`}
+        >
+          <iframe
+            src="https://radio.nl/radio/joe"
+            title="nederland.fm music stations"
+            allow="autoplay; encrypted-media"
+            className="radio-embed"
+          />
+        </div>
+
+        {/* Radio modal popup */}
+        <div
+          className={`radio-modal-overlay ${
+            isRadioOpen ? "radio-modal-open" : ""
+          }`}
+          onClick={closeRadio}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="radio-modal-heading"
+          aria-hidden={!isRadioOpen}
+        >
+          <div
+            className="radio-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="radio-modal-header">
+              <h2 id="radio-modal-heading">Radio</h2>
+              <button
+                className="radio-modal-close"
+                onClick={closeRadio}
+                aria-label="Close radio player"
+                title="Close"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div className="radio-modal-body">
+              <article
+                className="surface-card radio-card"
+                aria-label="TuneIn music embed"
+              >
+                <div className="radio-embed-wrapper" id="radio-embed-target">
+                  {/* Iframe will be moved here when modal is open */}
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <section
+          className="panel assignee-panel"
+          aria-labelledby="assignee-heading"
+        >
           <div className="panel-header">
             <h2 id="assignee-heading">Tasks by assignee</h2>
           </div>
           <div className="panel-body">
-            {status === 'loading' ? (
+            {status === "loading" ? (
               <p className="status-message" role="status">
                 Loading tasks from ClickUp…
               </p>
             ) : null}
-            {status === 'error' ? (
+            {status === "error" ? (
               <p className="status-message error" role="alert">
-                {error?.message ?? 'Unable to load tasks from ClickUp.'}
+                {error?.message ?? "Unable to load tasks from ClickUp."}
               </p>
             ) : null}
-            {status === 'success' && Object.keys(tasksByAssignee).length === 0 ? (
+            {status === "success" &&
+            Object.keys(tasksByAssignee).length === 0 ? (
               <p className="status-message" role="status">
                 No tasks available for the workload overview.
               </p>
             ) : null}
             {Object.keys(tasksByAssignee).length > 0 ? (
               <div className="assignee-grid" ref={assigneeGridRef}>
-                {Object.entries(tasksByAssignee).map(([assignee, assigneeData]) => {
-                  const ownedTasks = assigneeData.tasks;
-                  const mapTagsToDetails = (tags) =>
-                    Array.isArray(tags)
-                      ? tags.map((tag) => ({ name: tag, color: null }))
-                      : [];
+                {Object.entries(tasksByAssignee).map(
+                  ([assignee, assigneeData]) => {
+                    const ownedTasks = assigneeData.tasks;
+                    const mapTagsToDetails = (tags) =>
+                      Array.isArray(tags)
+                        ? tags.map((tag) => ({ name: tag, color: null }))
+                        : [];
 
-                  return (
-                    <article className="assignee-card" key={assignee}>
-                      <header>
-                        <div className="assignee-header">
-                          <div className="assignee-bubble assignee-bubble--large" aria-hidden="true">
-                            {assigneeData.avatar ? (
-                              <img src={assigneeData.avatar} alt="" />
-                            ) : (
-                              <span>{getInitials(assignee)}</span>
-                            )}
+                    return (
+                      <article className="assignee-card" key={assignee}>
+                        <header>
+                          <div className="assignee-header">
+                            <div
+                              className="assignee-bubble assignee-bubble--large"
+                              aria-hidden="true"
+                            >
+                              {assigneeData.avatar ? (
+                                <img src={assigneeData.avatar} alt="" />
+                              ) : (
+                                <span>{getInitials(assignee)}</span>
+                              )}
+                            </div>
+                            <div className="assignee-header-text">
+                              <h3>{assignee}</h3>
+                              <span className="assignee-count">
+                                {ownedTasks.length === 1
+                                  ? "1 task"
+                                  : `${ownedTasks.length} tasks`}
+                              </span>
+                            </div>
                           </div>
-                          <div className="assignee-header-text">
-                            <h3>{assignee}</h3>
-                            <span className="assignee-count">
-                              {ownedTasks.length === 1 ? '1 task' : `${ownedTasks.length} tasks`}
-                            </span>
-                          </div>
-                        </div>
-                      </header>
-                      <ul>
-                        {ownedTasks.map((task) => {
-                          const normalizedStatus = task.status?.trim();
-                          const showStatus =
-                            normalizedStatus && normalizedStatus.toLowerCase() !== 'to do';
-                          const tags =
-                            task.tagDetails && task.tagDetails.length > 0
-                              ? task.tagDetails
-                              : mapTagsToDetails(task.tags);
+                        </header>
+                        <ul>
+                          {ownedTasks.map((task) => {
+                            const normalizedStatus = task.status?.trim();
+                            const showStatus =
+                              normalizedStatus &&
+                              normalizedStatus.toLowerCase() !== "to do";
+                            const tags =
+                              task.tagDetails && task.tagDetails.length > 0
+                                ? task.tagDetails
+                                : mapTagsToDetails(task.tags);
 
-                          return (
-                            <li key={task.id} className="assignee-task-card">
-                              <div className="assignee-task-heading">
-                                <p className="task-name">{task.name}</p>
-                              </div>
-                              <div className="task-meta-row">
-                                {showStatus ? (
-                                  <StatusBadge
-                                    status={task.status}
-                                    color={task.statusColor}
-                                    isClosed={task.isClosed}
-                                  />
-                                ) : null}
-                                <span
-                                  className="priority-chip"
-                                  style={getPriorityStyles(task.priorityColor)}
-                                  title={task.priority ? `${task.priority} priority` : undefined}
-                                >
-                                  <svg
-                                    className="priority-flag-icon"
-                                    viewBox="0 0 16 16"
-                                    role="img"
-                                    aria-hidden="true"
-                                  >
-                                    <path
-                                      d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
-                                      fill="currentColor"
+                            return (
+                              <li key={task.id} className="assignee-task-card">
+                                <div className="assignee-task-heading">
+                                  <p className="task-name">{task.name}</p>
+                                </div>
+                                <div className="task-meta-row">
+                                  {showStatus ? (
+                                    <StatusBadge
+                                      status={task.status}
+                                      color={task.statusColor}
+                                      isClosed={task.isClosed}
                                     />
-                                  </svg>
-                                  <span className="sr-only">
-                                    {task.priority ? `${task.priority} priority` : 'Priority'}
+                                  ) : null}
+                                  <span
+                                    className="priority-chip"
+                                    style={getPriorityStyles(
+                                      task.priorityColor
+                                    )}
+                                    title={
+                                      task.priority
+                                        ? `${task.priority} priority`
+                                        : undefined
+                                    }
+                                  >
+                                    <svg
+                                      className="priority-flag-icon"
+                                      viewBox="0 0 16 16"
+                                      role="img"
+                                      aria-hidden="true"
+                                    >
+                                      <path
+                                        d="M4 2.25a.75.75 0 0 1 .75-.75h6.147a.75.75 0 0 1 .534 1.284L9.414 5l2.017 2.216A.75.75 0 0 1 10.896 8.5H5.5v5.75a.75.75 0 0 1-1.5 0Z"
+                                        fill="currentColor"
+                                      />
+                                    </svg>
+                                    <span className="sr-only">
+                                      {task.priority
+                                        ? `${task.priority} priority`
+                                        : "Priority"}
+                                    </span>
                                   </span>
-                                </span>
-                              {tags.map((tag) => (
-                                <span
-                                className="tag-pill"
-                                key={tag.name}
-                                style={getTagStyles(tag.color)}
-                                >
-                                {tag.name}
-                                </span>
-                              ))}
-                              {task.projectName ? (
-                                <span className="meta-pill task-project">
-                                  <svg
-                                    className="project-icon"
-                                    viewBox="0 0 16 16"
-                                    role="img"
-                                    aria-hidden="true"
-                                  >
-                                    <rect
-                                      x="2"
-                                      y="5.25"
-                                      width="12"
-                                      height="8.25"
-                                      rx="2.1"
-                                      stroke="currentColor"
-                                      fill="none"
-                                    />
-                                    <path
-                                      d="M2.1 7.4h11.8"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
-                                    <path
-                                      d="M5.75 5.25V4.2M10.25 5.25V4.2"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
-                                    <path
-                                      d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      fill="none"
-                                    />
-                                    <path
-                                      d="M6.7 9.3h2.6"
-                                      stroke="currentColor"
-                                      strokeLinecap="round"
-                                    />
-                                  </svg>
-                                  <span>{task.projectName}</span>
-                                </span>
-                              ) : null}
-                              {task.deadline ? (
-                                (() => {
-                                  const dl = new Date(task.deadline);
-                                  const valid = !Number.isNaN(dl.getTime());
-                                  const sameDay =
-                                    valid &&
-                                    dl.getFullYear() === now.getFullYear() &&
-                                    dl.getMonth() === now.getMonth() &&
-                                    dl.getDate() === now.getDate();
-                                  const wasDue = valid && dl < now && !sameDay;
-                                  const cls = wasDue ? 'overdue' : (sameDay ? 'due-today' : '');
-                                  return (
-                                    <span className={`meta-pill task-deadline${cls ? ` ${cls}` : ''}`}>
+                                  {tags.map((tag) => (
+                                    <span
+                                      className="tag-pill"
+                                      key={tag.name}
+                                      style={getTagStyles(tag.color)}
+                                    >
+                                      {tag.name}
+                                    </span>
+                                  ))}
+                                  {task.projectName ? (
+                                    <span className="meta-pill task-project">
                                       <svg
-                                        className="deadline-icon"
+                                        className="project-icon"
                                         viewBox="0 0 16 16"
                                         role="img"
                                         aria-hidden="true"
                                       >
                                         <rect
-                                          x="2.25"
-                                          y="3.5"
-                                          width="11.5"
-                                          height="10"
+                                          x="2"
+                                          y="5.25"
+                                          width="12"
+                                          height="8.25"
                                           rx="2.1"
                                           stroke="currentColor"
                                           fill="none"
                                         />
                                         <path
-                                          d="M2.25 6.75h11.5"
+                                          d="M2.1 7.4h11.8"
                                           stroke="currentColor"
                                           strokeLinecap="round"
                                         />
                                         <path
-                                          d="M5.25 1.75V3.5M10.75 1.75V3.5"
+                                          d="M5.75 5.25V4.2M10.25 5.25V4.2"
+                                          stroke="currentColor"
+                                          strokeLinecap="round"
+                                        />
+                                        <path
+                                          d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
+                                          stroke="currentColor"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          fill="none"
+                                        />
+                                        <path
+                                          d="M6.7 9.3h2.6"
                                           stroke="currentColor"
                                           strokeLinecap="round"
                                         />
                                       </svg>
-                                      <span className="sr-only">Due {formatDate(task.deadline)}</span>
-                                      <span aria-hidden="true">{formatDate(task.deadline)}</span>
+                                      <span>{task.projectName}</span>
                                     </span>
-                                  );
-                                })()
-                              ) : null}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
-        </div>
+                                  ) : null}
+                                  {task.deadline
+                                    ? (() => {
+                                        const dl = new Date(task.deadline);
+                                        const valid = !Number.isNaN(
+                                          dl.getTime()
+                                        );
+                                        const sameDay =
+                                          valid &&
+                                          dl.getFullYear() ===
+                                            now.getFullYear() &&
+                                          dl.getMonth() === now.getMonth() &&
+                                          dl.getDate() === now.getDate();
+                                        const wasDue =
+                                          valid && dl < now && !sameDay;
+                                        const cls = wasDue
+                                          ? "overdue"
+                                          : sameDay
+                                          ? "due-today"
+                                          : "";
+                                        return (
+                                          <span
+                                            className={`meta-pill task-deadline${
+                                              cls ? ` ${cls}` : ""
+                                            }`}
+                                          >
+                                            <svg
+                                              className="deadline-icon"
+                                              viewBox="0 0 16 16"
+                                              role="img"
+                                              aria-hidden="true"
+                                            >
+                                              <rect
+                                                x="2.25"
+                                                y="3.5"
+                                                width="11.5"
+                                                height="10"
+                                                rx="2.1"
+                                                stroke="currentColor"
+                                                fill="none"
+                                              />
+                                              <path
+                                                d="M2.25 6.75h11.5"
+                                                stroke="currentColor"
+                                                strokeLinecap="round"
+                                              />
+                                              <path
+                                                d="M5.25 1.75V3.5M10.75 1.75V3.5"
+                                                stroke="currentColor"
+                                                strokeLinecap="round"
+                                              />
+                                            </svg>
+                                            <span className="sr-only">
+                                              Due {formatDate(task.deadline)}
+                                            </span>
+                                            <span aria-hidden="true">
+                                              {formatDate(task.deadline)}
+                                            </span>
+                                          </span>
+                                        );
+                                      })()
+                                    : null}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </article>
+                    );
+                  }
+                )}
+              </div>
+            ) : null}
+          </div>
         </section>
       </div>
-      {christmasMode ? <div className="snow-overlay" aria-hidden="true" /> : null}
+      {christmasMode ? (
+        <div className="snow-overlay" aria-hidden="true" />
+      ) : null}
     </div>
   );
 }

@@ -11,11 +11,10 @@
   gap: clamp(1.5rem, 3vw, 2.5rem);
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'header'
-    'metrics'
-    'support'
-    'radio'
-    'assignee';
+    "header"
+    "metrics"
+    "support"
+    "assignee";
 }
 
 .header {
@@ -45,6 +44,7 @@
     rgba(var(--accent-rgb), 0.18),
     rgba(var(--accent-secondary-rgb), 0.35)
   );
+  position: relative;
 }
 
 .header-image img {
@@ -82,7 +82,11 @@
 }
 
 .surface-card {
-  background: linear-gradient(135deg, rgba(16, 27, 45, 0.85), rgba(var(--accent-secondary-rgb), 0.7));
+  background: linear-gradient(
+    135deg,
+    rgba(16, 27, 45, 0.85),
+    rgba(var(--accent-secondary-rgb), 0.7)
+  );
   border-radius: 14px;
   padding: 1.25rem 1.5rem;
   box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55);
@@ -139,10 +143,6 @@
   grid-area: support;
 }
 
-.radio-panel {
-  grid-area: radio;
-}
-
 .assignee-panel {
   grid-area: assignee;
 }
@@ -167,8 +167,181 @@
   padding: 1.5rem 1.75rem 2rem;
 }
 
-.radio-body {
-  display: grid;
+/* Radio trigger button */
+.radio-trigger {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 4rem;
+  background: linear-gradient(
+    135deg,
+    rgba(16, 27, 45, 0.95),
+    rgba(var(--accent-secondary-rgb), 0.85)
+  );
+  border: 1px solid var(--border-color);
+  border-left: none;
+  border-radius: 0 1rem 1rem 0;
+  box-shadow: 0 4px 12px rgba(3, 7, 18, 0.45);
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radio-trigger:hover {
+  width: 4rem;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--accent-rgb), 0.2),
+    rgba(var(--accent-secondary-rgb), 0.9)
+  );
+  box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.35);
+}
+
+.radio-trigger:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.radio-trigger svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
+}
+
+/* Radio iframe container - always mounted but hidden when not in use */
+.radio-iframe-container {
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.radio-iframe-container.radio-hidden {
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.radio-iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Radio modal overlay */
+.radio-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+}
+
+.radio-modal-overlay.radio-modal-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Radio modal content */
+.radio-modal-content {
+  background: var(--background-elevated);
+  border-radius: 1.25rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 40px 80px rgba(3, 7, 18, 0.75);
+  width: 100%;
+  max-width: 1200px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radio-modal-overlay.radio-modal-open .radio-modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Radio modal header */
+.radio-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 27, 45, 0.85),
+    rgba(var(--accent-secondary-rgb), 0.7)
+  );
+}
+
+.radio-modal-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+}
+
+/* Radio modal close button */
+.radio-modal-close {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: rgba(var(--accent-secondary-rgb), 0.3);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radio-modal-close:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.radio-modal-close svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+}
+
+/* Radio modal body */
+.radio-modal-body {
+  padding: 1.5rem 1.75rem 2rem;
+  overflow-y: auto;
 }
 
 .radio-card {
@@ -421,7 +594,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: linear-gradient(180deg, rgba(16, 27, 45, 0.95), rgba(var(--accent-secondary-rgb), 0.65));
+  background: linear-gradient(
+    180deg,
+    rgba(16, 27, 45, 0.95),
+    rgba(var(--accent-secondary-rgb), 0.65)
+  );
   box-shadow: 0 20px 40px rgba(3, 7, 18, 0.45);
   break-inside: avoid;
   width: 100%;
@@ -474,10 +651,10 @@
   color: var(--text-secondary);
   padding: 1rem 1.1rem;
   background: linear-gradient(
-      135deg,
-      rgba(var(--accent-secondary-rgb), 0.16),
-      rgba(var(--accent-rgb), 0.08)
-    );
+    135deg,
+    rgba(var(--accent-secondary-rgb), 0.16),
+    rgba(var(--accent-rgb), 0.08)
+  );
   border: 1px solid rgba(var(--accent-rgb), 0.22);
   border-radius: 1rem;
   box-shadow: 0 14px 38px rgba(5, 10, 24, 0.45);
@@ -593,9 +770,8 @@
   .app-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'header metrics'
-      'support assignee'
-      'radio .';
+      "header metrics"
+      "support assignee";
     align-items: start;
   }
 
@@ -612,6 +788,29 @@
   .support-table {
     min-width: 0;
   }
+
+  .radio-trigger {
+    width: 3rem;
+    height: 3.5rem;
+  }
+
+  .radio-trigger:hover {
+    width: 3.5rem;
+  }
+
+  .radio-trigger svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .radio-modal-content {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .radio-modal-header,
+  .radio-modal-body {
+    padding: 1.25rem 1.5rem;
+  }
 }
 
 /* Hide cursor when inactive */
@@ -624,6 +823,19 @@ body.hide-cursor,
    Christmas Mode (scoped)
    ================================ */
 
+/* Fireplace background for header when Christmas mode is active */
+[data-christmas="on"] .header-image {
+  background: linear-gradient(
+      135deg,
+      rgba(var(--accent-rgb), 0.18),
+      rgba(var(--accent-secondary-rgb), 0.35)
+    ),
+    url("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXlpaTlsc3dyeGZtbGdoYngyYmdpbGl0bGpvZDVyNGU4M2tuamF2YyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o72FhIuVWddxQHftS/giphy.gif");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 /* Snow overlay: subtle, low-density, gentle fall */
 [data-christmas="on"] .snow-overlay {
   position: fixed;
@@ -635,31 +847,19 @@ body.hide-cursor,
 /* Continuous background scroll for endless snow with slight horizontal drift */
 @keyframes snow-scroll-slow {
   to {
-    background-position:
-      20px 1200px,
-      60px 1240px,
-      -30px 1280px,
-      40px 1320px,
+    background-position: 20px 1200px, 60px 1240px, -30px 1280px, 40px 1320px,
       -20px 1260px;
   }
 }
 @keyframes snow-scroll-mid {
   to {
-    background-position:
-      -20px 1400px,
-      30px 1450px,
-      -50px 1490px,
-      25px 1540px,
+    background-position: -20px 1400px, 30px 1450px, -50px 1490px, 25px 1540px,
       -35px 1470px;
   }
 }
 @keyframes snow-scroll-fast {
   to {
-    background-position:
-      25px 1600px,
-      -40px 1660px,
-      45px 1700px,
-      -35px 1760px,
+    background-position: 25px 1600px, -40px 1660px, 45px 1700px, -35px 1760px,
       30px 1680px;
   }
 }
@@ -676,54 +876,45 @@ body.hide-cursor,
 
 /* Back layer - sparse, very slow */
 [data-christmas="on"] .snow-overlay {
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.85) 1.9px, transparent 3.3px),
-    radial-gradient(circle, rgba(255,255,255,0.82) 1.6px, transparent 3.1px),
-    radial-gradient(circle, rgba(255,255,255,0.88) 2.1px, transparent 3.5px);
-  background-size:
-    360px 520px,
-    320px 480px,
-    400px 560px;
-  background-position:
-    0 0,
-    120px -60px,
-    60px -120px;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.85) 1.9px,
+      transparent 3.3px
+    ),
+    radial-gradient(circle, rgba(255, 255, 255, 0.82) 1.6px, transparent 3.1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.88) 2.1px, transparent 3.5px);
+  background-size: 360px 520px, 320px 480px, 400px 560px;
+  background-position: 0 0, 120px -60px, 60px -120px;
   animation: snow-scroll-slow 52s linear infinite;
   opacity: 0.24;
 }
 
 /* Mid layer */
 [data-christmas="on"] .snow-overlay::before {
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.94) 1.9px, transparent 3.3px),
-    radial-gradient(circle, rgba(255,255,255,0.92) 1.7px, transparent 3.1px),
-    radial-gradient(circle, rgba(255,255,255,0.96) 2.1px, transparent 3.5px);
-  background-size:
-    320px 460px,
-    280px 420px,
-    360px 500px;
-  background-position:
-    40px 0,
-    140px -70px,
-    90px -140px;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.94) 1.9px,
+      transparent 3.3px
+    ),
+    radial-gradient(circle, rgba(255, 255, 255, 0.92) 1.7px, transparent 3.1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.96) 2.1px, transparent 3.5px);
+  background-size: 320px 460px, 280px 420px, 360px 500px;
+  background-position: 40px 0, 140px -70px, 90px -140px;
   animation: snow-scroll-mid 40s linear infinite;
   opacity: 0.3;
 }
 
 /* Front layer - slightly faster */
 [data-christmas="on"] .snow-overlay::after {
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.98) 2px, transparent 3.4px),
-    radial-gradient(circle, rgba(255,255,255,0.96) 1.8px, transparent 3.2px),
-    radial-gradient(circle, rgba(255,255,255,0.99) 2.2px, transparent 3.6px);
-  background-size:
-    280px 420px,
-    240px 380px,
-    320px 460px;
-  background-position:
-    80px 0,
-    160px -80px,
-    120px -160px;
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.98) 2px,
+      transparent 3.4px
+    ),
+    radial-gradient(circle, rgba(255, 255, 255, 0.96) 1.8px, transparent 3.2px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.99) 2.2px, transparent 3.6px);
+  background-size: 280px 420px, 240px 380px, 320px 460px;
+  background-position: 80px 0, 160px -80px, 120px -160px;
   animation: snow-scroll-fast 32s linear infinite;
   opacity: 0.36;
 }
@@ -739,7 +930,6 @@ body.hide-cursor,
 [data-christmas="on"] .clock-card::before,
 [data-christmas="on"] .metric-card::before,
 [data-christmas="on"] .panel.support-panel::before,
-[data-christmas="on"] .panel.radio-panel::before,
 [data-christmas="on"] .panel.assignee-panel::before {
   content: "";
   position: absolute;
@@ -753,8 +943,8 @@ body.hide-cursor,
   background-position: top left;
   pointer-events: none;
   opacity: 0.9;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25))
-          drop-shadow(0 0 4px rgba(255,255,255,0.25));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.25));
   z-index: 1;
   animation: garland-pulse 3.5s ease-in-out infinite alternate;
 }
@@ -771,13 +961,13 @@ body.hide-cursor,
 @keyframes garland-pulse {
   0% {
     opacity: 0.82;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25))
-            drop-shadow(0 0 2px rgba(255,255,255,0.18));
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25))
+      drop-shadow(0 0 2px rgba(255, 255, 255, 0.18));
   }
   100% {
     opacity: 1;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25))
-            drop-shadow(0 0 6px rgba(255,255,255,0.45));
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25))
+      drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));
   }
 }
 
@@ -850,11 +1040,13 @@ body.hide-cursor,
 /* Urgent metric pulse */
 @keyframes pulse-red {
   0% {
-    box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55), 0 0 0 0 rgba(239, 68, 68, 0.35);
+    box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55),
+      0 0 0 0 rgba(239, 68, 68, 0.35);
     border-color: rgba(239, 68, 68, 0.4);
   }
   50% {
-    box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55), 0 0 0 14px rgba(239, 68, 68, 0);
+    box-shadow: 0 22px 44px rgba(3, 7, 18, 0.55),
+      0 0 0 14px rgba(239, 68, 68, 0);
     border-color: rgba(239, 68, 68, 0.85);
   }
   100% {
@@ -875,9 +1067,15 @@ body.hide-cursor,
 }
 
 @keyframes pulse-red-bg {
-  0% { opacity: 0; }
-  50% { opacity: 0.42; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .metric-card.urgent-pulse::before {

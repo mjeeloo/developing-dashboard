@@ -10,3 +10,4 @@ npm-shrinkwrap.json
 .npm-cache/
 .npm
 .env.local
+package-lock.json
