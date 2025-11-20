@@ -903,6 +903,29 @@ function App() {
           </div>
         </section>
 
+        {christmasMode ? (
+          <section className="panel video-panel" aria-labelledby="video-heading">
+            <div className="panel-header">
+              <h2 id="video-heading">Support demo</h2>
+              <p className="panel-subtitle">Autoplaying YouTube embed</p>
+            </div>
+            <div className="panel-body video-body">
+              <article className="surface-card video-card" aria-label="YouTube autoplay video">
+                <div className="video-embed-wrapper">
+                  <iframe
+                    src="https://www.youtube.com/embed/RDfjXj5EGqI?autoplay=1&mute=1&loop=1&playlist=RDfjXj5EGqI"
+                    title="Auto-playing YouTube video"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    className="video-embed"
+                  />
+                </div>
+              </article>
+            </div>
+          </section>
+        ) : null}
+
         <section className="panel radio-panel" aria-labelledby="radio-heading">
           <div className="panel-header">
             <h2 id="radio-heading">Radio</h2>

@@ -18,6 +18,16 @@
     'assignee';
 }
 
+[data-christmas='on'] .app-grid {
+  grid-template-areas:
+    'header'
+    'metrics'
+    'support'
+    'video'
+    'radio'
+    'assignee';
+}
+
 .header {
   grid-area: header;
   display: grid;
@@ -139,6 +149,10 @@
   grid-area: support;
 }
 
+.video-panel {
+  grid-area: video;
+}
+
 .radio-panel {
   grid-area: radio;
 }
@@ -167,6 +181,35 @@
   padding: 1.5rem 1.75rem 2rem;
 }
 
+.video-body {
+  display: grid;
+}
+
+.video-card {
+  display: grid;
+  gap: 1rem;
+  padding: 0px;
+}
+
+.video-embed-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--background-card);
+  border: 1px solid var(--border-color);
+}
+
+.video-embed,
+.radio-embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .radio-body {
   display: grid;
 }
@@ -185,14 +228,6 @@
   border-radius: 12px;
   background: var(--background-card);
   border: 1px solid var(--border-color);
-}
-
-.radio-embed {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
 }
 
 .table-wrapper {
@@ -595,8 +630,16 @@
     grid-template-areas:
       'header metrics'
       'support assignee'
-      'radio .';
+      'radio assignee';
     align-items: start;
+  }
+
+  [data-christmas='on'] .app-grid {
+    grid-template-areas:
+      'header metrics'
+      'support assignee'
+      'video assignee'
+      'radio .';
   }
 
   .metrics {
