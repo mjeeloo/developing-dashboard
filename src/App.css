@@ -47,11 +47,12 @@
 }
 
 .header-image img {
-  width: min(100%, 28rem);
-  height: auto;
+  height: 93.4px;
   max-height: 100%;
+  width: auto;
+  max-width: 100%;
   display: block;
-  aspect-ratio: 584.65 / 117.517;
+  object-fit: contain;
 }
 
 .header-time {
