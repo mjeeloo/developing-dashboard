@@ -756,6 +756,7 @@ function App() {
       <div className="app-grid">
         <header className="header">
           <div className="header-image header-card" role="img" aria-label="TV dashboard header image">
+            <div className="fireplace-backdrop" aria-hidden="true" />
             <img src={logo} alt="" />
           </div>
           <div className="header-time clock-card surface-card" aria-live="polite">
