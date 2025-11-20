@@ -903,6 +903,25 @@ function App() {
           </div>
         </section>
 
+        <section className="panel video-panel" aria-labelledby="video-heading">
+          <div className="panel-header">
+            <h2 id="video-heading">Featured update</h2>
+          </div>
+          <div className="panel-body video-body">
+            <article className="surface-card video-card" aria-label="Autoplay video update">
+              <div className="video-embed-wrapper">
+                <iframe
+                  className="video-embed"
+                  src="https://www.youtube.com/embed/RDfjXj5EGqI?autoplay=1&mute=1&rel=0"
+                  title="YouTube video embed"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section className="panel radio-panel" aria-labelledby="radio-heading">
           <div className="panel-header">
             <h2 id="radio-heading">Radio</h2>
