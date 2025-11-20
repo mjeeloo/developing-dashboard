@@ -377,6 +377,207 @@ const getTagStyles = (color) => {
   };
 };
 
+const getNormalizedStatus = (value) =>
+  typeof value === 'string'
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+    : '';
+
+const STATUS_SORT_ORDER = [
+  'complete',
+  'on hold',
+  'in progress',
+  'planned',
+  'to do',
+];
+
+const STATUS_CANONICAL_SYNONYMS = new Map([
+  ['closed', 'complete'],
+  ['done', 'complete'],
+  ['completed', 'complete'],
+  ['complete', 'complete'],
+  ['resolved', 'complete'],
+  ['fixed', 'complete'],
+  ['released', 'complete'],
+  ['deployed', 'complete'],
+  ['archived', 'complete'],
+  ['cancelled', 'complete'],
+  ['blocked', 'on hold'],
+  ['blocker', 'on hold'],
+  ['hold', 'on hold'],
+  ['onhold', 'on hold'],
+  ['waiting', 'on hold'],
+  ['pending', 'on hold'],
+  ['stuck', 'on hold'],
+  ['paused', 'on hold'],
+  ['paused for review', 'on hold'],
+  ['awaiting reply', 'on hold'],
+  ['in progress', 'in progress'],
+  ['doing', 'in progress'],
+  ['working', 'in progress'],
+  ['open', 'in progress'],
+  ['active', 'in progress'],
+  ['responding', 'in progress'],
+  ['follow up', 'in progress'],
+  ['implementation', 'in progress'],
+  ['scheduled', 'in progress'],
+  ['scheduled work', 'in progress'],
+  ['planned', 'planned'],
+  ['planning', 'planned'],
+  ['grooming', 'planned'],
+  ['backlog', 'planned'],
+  ['ready', 'planned'],
+  ['queue', 'planned'],
+  ['intake', 'planned'],
+  ['ideation', 'planned'],
+  ['idea', 'planned'],
+  ['prepared', 'planned'],
+  ['to do', 'to do'],
+  ['todo', 'to do'],
+  ['new', 'to do'],
+  ['unstarted', 'to do'],
+  ['not started', 'to do'],
+  ['triage', 'to do'],
+]);
+
+const STATUS_DEFAULT_SORT_VALUE = STATUS_SORT_ORDER.length;
+
+const getStatusSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return STATUS_DEFAULT_SORT_VALUE;
+  }
+
+  if (task.isClosed) {
+    return 0;
+  }
+
+  const normalizedStatus = getNormalizedStatus(task.status);
+  const normalizedType = getNormalizedStatus(task.statusType);
+
+  const directLookup = (value) => {
+    if (!value) {
+      return null;
+    }
+
+    if (STATUS_SORT_ORDER.includes(value)) {
+      return value;
+    }
+
+    const synonym = STATUS_CANONICAL_SYNONYMS.get(value);
+    if (synonym) {
+      return synonym;
+    }
+
+    for (const [pattern, canonical] of [
+      [/close/, 'complete'],
+      [/done/, 'complete'],
+      [/complete/, 'complete'],
+      [/resolve/, 'complete'],
+      [/fix/, 'complete'],
+      [/deploy/, 'complete'],
+      [/release/, 'complete'],
+      [/archive/, 'complete'],
+      [/cancel/, 'complete'],
+      [/block|hold|wait|pending|stuck|pause|depend|await/, 'on hold'],
+      [/progress|work|doing|active|open|respond|reply|follow ?up|implement/, 'in progress'],
+      [/plan|ready|queue|backlog|intake|idea|groom/, 'planned'],
+      [/to ?do|todo|new|unstart|triage/, 'to do'],
+    ]) {
+      if (pattern.test(value)) {
+        return canonical;
+      }
+    }
+
+    return null;
+  };
+
+  const resolvedStatus = directLookup(normalizedStatus) || directLookup(normalizedType);
+  if (!resolvedStatus) {
+    return STATUS_DEFAULT_SORT_VALUE;
+  }
+
+  return STATUS_SORT_ORDER.indexOf(resolvedStatus);
+};
+
+const PRIORITY_SORT_ORDER = ['urgent', 'high', 'normal', 'low', 'none'];
+
+const PRIORITY_CANONICAL_LOOKUP = PRIORITY_SORT_ORDER.reduce((map, key, index) => {
+  map.set(key, index);
+  return map;
+}, new Map());
+
+const PRIORITY_SYNONYMS = new Map([
+  ['critical', 'urgent'],
+  ['highest', 'urgent'],
+  ['immediate', 'urgent'],
+  ['rush', 'urgent'],
+  ['high', 'high'],
+  ['normal', 'normal'],
+  ['standard', 'normal'],
+  ['moderate', 'normal'],
+  ['medium', 'normal'],
+  ['low', 'low'],
+  ['lowest', 'low'],
+  ['minor', 'low'],
+  ['none', 'none'],
+  ['no priority', 'none'],
+]);
+
+const getPrioritySortValue = (priority) => {
+  if (typeof priority !== 'string') {
+    return PRIORITY_SORT_ORDER.length;
+  }
+
+  const normalized = priority.trim().toLowerCase();
+  if (!normalized) {
+    return PRIORITY_SORT_ORDER.length;
+  }
+
+  const canonical = PRIORITY_SYNONYMS.get(normalized) || normalized;
+  const value = PRIORITY_CANONICAL_LOOKUP.get(canonical);
+  return value ?? PRIORITY_SORT_ORDER.length;
+};
+
+const getDeadlineSortValue = (task) => {
+  if (!task || typeof task !== 'object') {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const source = task.deadline ?? task.dueDate;
+  if (!source) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const timestamp = Date.parse(source);
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+};
+
+const compareTasks = (a, b) => {
+  const statusA = getStatusSortValue(a);
+  const statusB = getStatusSortValue(b);
+  if (statusA !== statusB) {
+    return statusA - statusB;
+  }
+
+  const priorityA = getPrioritySortValue(a?.priority);
+  const priorityB = getPrioritySortValue(b?.priority);
+  if (priorityA !== priorityB) {
+    return priorityA - priorityB;
+  }
+
+  const deadlineA = getDeadlineSortValue(a);
+  const deadlineB = getDeadlineSortValue(b);
+  if (deadlineA !== deadlineB) {
+    return deadlineA - deadlineB;
+  }
+
+  const nameA = typeof a?.name === 'string' ? a.name : '';
+  const nameB = typeof b?.name === 'string' ? b.name : '';
+  return nameA.localeCompare(nameB);
+};
+
 function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
@@ -461,13 +662,11 @@ function App() {
     [tasks],
   );
 
-  const supportTasks = useMemo(
-    () =>
-      activeTasks.filter(
-        (task) => Array.isArray(task.tags) && task.tags.includes('Support'),
-      ),
-    [activeTasks],
-  );
+  const supportTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => Array.isArray(task.tags) && task.tags.includes('Support'))
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const vulnerabilityCount = useMemo(
     () =>
@@ -494,13 +693,13 @@ function App() {
     [activeTasks],
   );
 
-  const assignedTasks = useMemo(
-    () =>
-      activeTasks.filter((task) => {
+  const assignedTasks = useMemo(() => {
+    return activeTasks
+      .filter((task) => {
         return Boolean(task.assignee);
-      }),
-    [activeTasks],
-  );
+      })
+      .sort(compareTasks);
+  }, [activeTasks]);
 
   const tasksByAssignee = useMemo(() => {
     return assignedTasks.reduce((accumulator, task) => {
