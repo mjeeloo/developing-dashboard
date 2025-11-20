@@ -183,8 +183,11 @@
 }
 
 .video-body {
-  display: grid;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
+  height: 100%;
 }
 
 .video-card {
@@ -192,6 +195,12 @@
   gap: 1rem;
   padding: 0px;
   align-self: start;
+}
+
+.video-spacer {
+  flex: 1 1 auto;
+  width: 100%;
+  pointer-events: none;
 }
 
 .video-embed-wrapper {

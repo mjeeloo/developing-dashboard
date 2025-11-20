@@ -922,6 +922,7 @@ function App() {
                   />
                 </div>
               </article>
+              <div className="video-spacer" aria-hidden="true" />
             </div>
           </section>
         ) : null}
