@@ -17,6 +17,7 @@ const resolveApiBase = () => {
 
 const REFRESH_INTERVAL_MS = 60_000;
 const PAGE_SIZE = 100;
+const DEFAULT_DEADLINE_FIELD_ID = 'de549afd-be31-445f-8d21-6ab7c794ea08';
 
 const CLOSED_STATUS_VALUES = new Set([
   'closed',
@@ -330,7 +331,8 @@ export function useClickUpTasks() {
       apiBase: resolveApiBase(),
       tagsFieldId: import.meta.env.VITE_CLICKUP_TAGS_FIELD_ID,
       projectFieldId: import.meta.env.VITE_CLICKUP_PROJECT_FIELD_ID,
-      deadlineFieldId: import.meta.env.VITE_CLICKUP_DEADLINE_FIELD_ID,
+      deadlineFieldId:
+        import.meta.env.VITE_CLICKUP_DEADLINE_FIELD_ID || DEFAULT_DEADLINE_FIELD_ID,
     };
   }, []);
 
