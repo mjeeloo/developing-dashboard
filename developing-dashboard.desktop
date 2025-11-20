@@ -2,10 +2,10 @@
 Version=1.0
 Type=Application
 Name=Developing Dashboard
-Comment=Start the Developing dashboard in a fullscreen window
+Comment=Start the Developing dashboard in a fullscreen window. Logs: /tmp/dashboard-startup.log
 Exec=/bin/bash -c "$HOME/developing-dashboard/startup.sh"
 Icon=preferences-desktop
-Terminal=false
+Terminal=true
 Categories=Utility;
-StartupNotify=false
+StartupNotify=true
 NoDisplay=false

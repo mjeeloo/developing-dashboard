@@ -1,88 +1,97 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-diff --git a/startup.sh b/startup.sh
-old mode 100644
-new mode 100755
-index 4c9936cc2e9df4cfd5eda198080ad4ee78c400c6..a6499410ea16a09f1750c5ab85973a86c755d95e
---- a/startup.sh
-+++ b/startup.sh
-@@ -1,51 +1,75 @@
- #!/usr/bin/env bash
- set -euo pipefail
+# ---- LOGGING SETUP ----
+LOGFILE="/tmp/dashboard-startup.log"
+exec > >(tee -a "$LOGFILE") 2>&1
 
- # ---- SETTINGS ----
- APP_URL="http://localhost:5173"
--DASH_DIR="$HOME/developing-dashboard"
-+
-+# Default to the folder that contains this script so the launcher keeps working
-+# even if the repository is not located at $HOME/developing-dashboard.
-+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-+DASH_DIR="${DASH_DIR:-$SCRIPT_DIR}"
-+
-+LOG_FILE="${LOG_FILE:-/tmp/developing-dashboard-start.log}"
+log() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+}
 
- # Browser: choose chromium or google-chrome
- BROWSER_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
+log "========================================="
+log "Starting Developing Dashboard"
+log "Log file: $LOGFILE"
+log "========================================="
 
- # ---- PRECHECKS ----
-+exec > >(tee -a "$LOG_FILE") 2>&1
-+
-+echo "[dashboard] Using repository at: $DASH_DIR"
-+
-+if [[ ! -d "$DASH_DIR" ]]; then
-+  echo "[dashboard] Repository directory not found. Set DASH_DIR to the clone path." >&2
-+  exit 1
-+fi
-+
- if [[ -z "${BROWSER_BIN}" ]]; then
-   echo "Chromium/Chrome not found. Install 'chromium' or 'google-chrome'." >&2
-   exit 1
- fi
+# ---- SETTINGS ----
+APP_URL="http://localhost:5173"
+DASH_DIR="$HOME/developing-dashboard"
 
- # Unmute and set volume (PipeWire/PulseAudio)
- if command -v pactl >/dev/null 2>&1; then
-   pactl set-sink-mute @DEFAULT_SINK@ 0 || true
-   pactl set-sink-volume @DEFAULT_SINK@ 50% || true
- fi
+log "Settings:"
+log "  APP_URL: $APP_URL"
+log "  DASH_DIR: $DASH_DIR"
 
- # ---- UPDATE & START DEV SERVER ----
- cd "$DASH_DIR"
--git pull --ff-only
--# Prefer reproducible installs over 'sudo npm update'
-+
-+if [[ -d .git ]]; then
-+  echo "[dashboard] Pulling latest changes..."
-+  git pull --ff-only || {
-+    echo "[dashboard] git pull failed; continuing with local checkout." >&2
-+  }
-+else
-+  echo "[dashboard] No .git directory found; skipping git pull."
-+fi
-+
- if command -v npm >/dev/null 2>&1; then
-+  echo "[dashboard] Starting dev server with npm run dev..."
-   nohup npm run dev >/tmp/dashboard-dev.log 2>&1 &
- else
-   echo "npm not found. Install Node.js/npm." >&2
-   exit 1
- fi
+# Browser: choose chromium or google-chrome
+BROWSER_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
 
- # ---- WAIT FOR APP TO BE READY ----
--echo "Waiting for $APP_URL ..."
-+echo "[dashboard] Waiting for $APP_URL ... (log: $LOG_FILE)"
- for i in {1..60}; do
-   if curl -fsS -o /dev/null "$APP_URL"; then
-     break
-   fi
-   sleep 1
- done
+# ---- PRECHECKS ----
+log "Running prechecks..."
+if [[ -z "${BROWSER_BIN}" ]]; then
+  log "ERROR: Chromium/Chrome not found. Install 'chromium' or 'google-chrome'."
+  exit 1
+fi
+log "Browser found: $BROWSER_BIN"
 
- # ---- OPEN IN FULLSCREEN ----
- # --app removes tabs/URL bar and kiosk makes it fullscreen on most desktops
- nohup "$BROWSER_BIN" \
-   --app="$APP_URL" \
-   --start-fullscreen \
-   --incognito \
-   --disable-infobars \
-   --autoplay-policy=no-user-gesture-required \
-   >/dev/null 2>&1 &
+# Unmute and set volume (PipeWire/PulseAudio)
+if command -v pactl >/dev/null 2>&1; then
+  log "Setting audio volume..."
+  pactl set-sink-mute @DEFAULT_SINK@ 0 || true
+  pactl set-sink-volume @DEFAULT_SINK@ 50% || true
+else
+  log "pactl not found, skipping audio setup (not on Linux with PulseAudio/PipeWire)"
+fi
+
+# ---- UPDATE & START DEV SERVER ----
+log "Changing to directory: $DASH_DIR"
+cd "$DASH_DIR"
+
+log "Pulling latest changes from git..."
+if git pull --ff-only; then
+  log "Git pull successful"
+else
+  log "WARNING: Git pull failed or not needed, continuing anyway"
+fi
+
+# Prefer reproducible installs over 'sudo npm update'
+if command -v npm >/dev/null 2>&1; then
+  log "Starting npm dev server..."
+  nohup npm run dev >/tmp/dashboard-dev.log 2>&1 &
+  NPM_PID=$!
+  log "npm dev server started (PID: $NPM_PID)"
+  log "Dev server logs: /tmp/dashboard-dev.log"
+else
+  log "ERROR: npm not found. Install Node.js/npm."
+  exit 1
+fi
+
+# ---- WAIT FOR APP TO BE READY ----
+log "Waiting for $APP_URL to be ready..."
+for i in {1..60}; do
+  if curl -fsS -o /dev/null "$APP_URL"; then
+    log "App is ready after $i seconds!"
+    break
+  fi
+  if [[ $i -eq 60 ]]; then
+    log "ERROR: Timeout waiting for app to start. Check /tmp/dashboard-dev.log"
+    exit 1
+  fi
+  sleep 1
+done
+
+# ---- OPEN IN FULLSCREEN ----
+log "Opening browser in fullscreen mode..."
+# --app removes tabs/URL bar and kiosk makes it fullscreen on most desktops
+nohup "$BROWSER_BIN" \
+  --app="$APP_URL" \
+  --start-fullscreen \
+  --incognito \
+  --disable-infobars \
+  --autoplay-policy=no-user-gesture-required \
+  >/dev/null 2>&1 &
+BROWSER_PID=$!
+log "Browser opened (PID: $BROWSER_PID)"
+log "========================================="
+log "Dashboard started successfully!"
+log "To view logs: tail -f $LOGFILE"
+log "========================================="
