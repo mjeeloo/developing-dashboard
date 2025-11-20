@@ -525,33 +525,6 @@ const PRIORITY_SYNONYMS = new Map([
   ['no priority', 'none'],
 ]);
 
-const RADIO_STATIONS = [
-  {
-    id: 'bbc1',
-    name: 'BBC Radio 1',
-    description: 'Chart hits and upbeat playlists.',
-    streamUrl: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
-  },
-  {
-    id: 'kexp',
-    name: 'KEXP 90.3 FM',
-    description: 'Independent, eclectic selections from Seattle.',
-    streamUrl: 'https://kexp-mp3-128.streamguys1.com/kexp128.mp3',
-  },
-  {
-    id: 'npr',
-    name: 'NPR News',
-    description: 'News, culture, and conversations.',
-    streamUrl: 'https://npr-ice.streamguys1.com/live.mp3',
-  },
-  {
-    id: 'lofi',
-    name: 'Lofi Girl',
-    description: 'Chill beats to keep momentum flowing.',
-    streamUrl: 'https://stream.laut.fm/lofi',
-  },
-];
-
 const getPrioritySortValue = (priority) => {
   if (typeof priority !== 'string') {
     return PRIORITY_SORT_ORDER.length;
@@ -609,8 +582,6 @@ function App() {
   const { tasks, status, error } = useClickUpTasks();
   const [now, setNow] = useState(() => new Date());
   const [christmasMode, setChristmasMode] = useState(false);
-  const [selectedStation, setSelectedStation] = useState(RADIO_STATIONS[0]);
-  const audioRef = useRef(null);
   const toggleChristmas = () => setChristmasMode((v) => !v);
 
   useEffect(() => {
@@ -664,20 +635,6 @@ function App() {
       root.classList.remove('hide-cursor');
     };
   }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) {
-      return;
-    }
-
-    const wasPlaying = !audio.paused && !audio.ended;
-    audio.load();
-
-    if (wasPlaying) {
-      audio.play().catch(() => {});
-    }
-  }, [selectedStation]);
 
   const currentTime = useMemo(
     () =>
@@ -948,39 +905,19 @@ function App() {
 
         <section className="panel radio-panel" aria-labelledby="radio-heading">
           <div className="panel-header">
-            <h2 id="radio-heading">Radio player</h2>
-            <p className="panel-subtitle">
-              Pick a station to keep the team energized while you work.
-            </p>
+            <h2 id="radio-heading">Radio</h2>
+            <p className="panel-subtitle">Embedded TuneIn music page.</p>
           </div>
           <div className="panel-body radio-body">
-            <article className="surface-card radio-card" aria-label="Embedded radio player">
-              <div className="station-picker" role="group" aria-label="Radio stations">
-                {RADIO_STATIONS.map((station) => (
-                  <button
-                    key={station.id}
-                    type="button"
-                    className={`station-button${station.id === selectedStation.id ? ' is-active' : ''}`}
-                    onClick={() => setSelectedStation(station)}
-                  >
-                    <span className="station-name">{station.name}</span>
-                    <span className="station-desc">{station.description}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="audio-wrapper">
-                <p className="station-now-playing">
-                  Now playing: <strong>{selectedStation.name}</strong>
-                </p>
-                <audio
-                  ref={audioRef}
-                  controls
-                  preload="none"
-                  aria-label={`Radio player for ${selectedStation.name}`}
-                >
-                  <source src={selectedStation.streamUrl} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
+            <article className="surface-card radio-card" aria-label="TuneIn music embed">
+              <div className="radio-embed-wrapper">
+                <iframe
+                  src="https://tunein.com/radio/music/"
+                  title="TuneIn music stations"
+                  allow="autoplay; encrypted-media"
+                  loading="lazy"
+                  className="radio-embed"
+                />
               </div>
             </article>
           </div>
