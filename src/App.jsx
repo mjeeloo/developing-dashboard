@@ -442,6 +442,25 @@ const STATUS_CANONICAL_SYNONYMS = new Map([
 
 const STATUS_DEFAULT_SORT_VALUE = STATUS_SORT_ORDER.length;
 
+const isOnHoldStatus = (status) => {
+  const normalized = getNormalizedStatus(status);
+
+  if (!normalized) {
+    return false;
+  }
+
+  if (normalized === "on hold") {
+    return true;
+  }
+
+  const canonical = STATUS_CANONICAL_SYNONYMS.get(normalized);
+  if (canonical === "on hold") {
+    return true;
+  }
+
+  return /block|hold|wait|pending|stuck|pause|depend|await/.test(normalized);
+};
+
 const getStatusSortValue = (task) => {
   if (!task || typeof task !== "object") {
     return STATUS_DEFAULT_SORT_VALUE;
@@ -683,7 +702,13 @@ function App() {
   );
 
   const activeTasks = useMemo(
-    () => tasks.filter((task) => !task.isClosed),
+    () =>
+      tasks.filter(
+        (task) =>
+          !task.isClosed &&
+          !isOnHoldStatus(task.status) &&
+          !isOnHoldStatus(task.statusType)
+      ),
     [tasks]
   );
 
