@@ -17,7 +17,6 @@ const resolveApiBase = () => {
 
 const REFRESH_INTERVAL_MS = 60_000;
 const PAGE_SIZE = 100;
-const DEFAULT_DEADLINE_FIELD_ID = 'de549afd-be31-445f-8d21-6ab7c794ea08';
 
 const CLOSED_STATUS_VALUES = new Set([
   'closed',
@@ -155,81 +154,6 @@ const extractTagsFromCustomField = (customFields, { tagsFieldId } = {}) => {
   return { tags, tagDetails };
 };
 
-const findCustomField = (customFields, { id, nameIncludes, type } = {}) => {
-  const normalizedId = typeof id === 'string' ? id.trim() : '';
-  const normalizedName = normalizeString(nameIncludes);
-  const normalizedType = normalizeString(type);
-
-  return customFields.find((field) => {
-    if (!field) {
-      return false;
-    }
-
-    const fieldId = field.id || field.uuid;
-    if (normalizedId && fieldId === normalizedId) {
-      return true;
-    }
-
-    const fieldType = normalizeString(field.type);
-    if (normalizedType && fieldType !== normalizedType) {
-      return false;
-    }
-
-    const fieldName = normalizeString(field.name || field.label);
-    if (normalizedName && fieldName.includes(normalizedName)) {
-      return true;
-    }
-
-    return false;
-  });
-};
-
-const extractDeadlineFromCustomField = (customFields, { deadlineFieldId } = {}) => {
-  const deadlineField = findCustomField(customFields, {
-    id: deadlineFieldId,
-    nameIncludes: 'deadline',
-    type: 'date',
-  });
-
-  if (!deadlineField || deadlineField.value == null || deadlineField.value === '0') {
-    return null;
-  }
-
-  const rawValue = deadlineField.value;
-
-  const normalizeValue = (value) => {
-    if (value == null || value === '0') {
-      return null;
-    }
-
-    if (typeof value === 'number') {
-      return value;
-    }
-
-    if (typeof value === 'string') {
-      const numeric = Number(value);
-      if (!Number.isNaN(numeric) && numeric > 0) {
-        return numeric;
-      }
-      const parsedDate = Date.parse(value);
-      return Number.isNaN(parsedDate) ? null : parsedDate;
-    }
-
-    if (typeof value === 'object') {
-      return normalizeValue(value.start ?? value.value ?? value.end ?? value.date ?? null);
-    }
-
-    return null;
-  };
-
-  const normalizedValue = normalizeValue(rawValue);
-  if (!normalizedValue) {
-    return null;
-  }
-
-  return new Date(normalizedValue).toISOString();
-};
-
 const mapTask = (task, options = {}) => {
   const normalizedAssignees = (Array.isArray(task.assignees) ? task.assignees : [])
     .map((assignee) => {
@@ -258,6 +182,8 @@ const mapTask = (task, options = {}) => {
   const customFields = Array.isArray(task?.custom_fields) ? task.custom_fields : [];
   const { tags, tagDetails } = extractTagsFromCustomField(customFields, options);
 
+  const normalizedDueDate = dueDate ? new Date(dueDate).toISOString() : null;
+
   return {
     id: task.custom_id || task.id,
     name: task.name,
@@ -267,12 +193,11 @@ const mapTask = (task, options = {}) => {
     isClosed,
     assignee: assigneeNames.length > 0 ? assigneeNames.join(', ') : null,
     assignees: normalizedAssignees,
-    dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+    dueDate: normalizedDueDate,
     priority: task.priority?.priority || 'None',
     priorityColor: task.priority?.color || null,
     tags,
     tagDetails,
-    deadline: extractDeadlineFromCustomField(customFields, options),
     url: task.url,
   };
 };
@@ -290,8 +215,6 @@ export function useClickUpTasks() {
       listId: import.meta.env.VITE_CLICKUP_LIST_ID,
       apiBase: resolveApiBase(),
       tagsFieldId: import.meta.env.VITE_CLICKUP_TAGS_FIELD_ID,
-      deadlineFieldId:
-        import.meta.env.VITE_CLICKUP_DEADLINE_FIELD_ID || DEFAULT_DEADLINE_FIELD_ID,
     };
   }, []);
 
