@@ -184,45 +184,6 @@ const findCustomField = (customFields, { id, nameIncludes, type } = {}) => {
   });
 };
 
-const extractProjectFromCustomField = (customFields, { projectFieldId } = {}) => {
-  const projectField = findCustomField(customFields, {
-    id: projectFieldId,
-    nameIncludes: 'project',
-    type: 'list_relationship',
-  });
-
-  if (!projectField || projectField.value == null) {
-    return null;
-  }
-
-  const rawValue = projectField.value;
-  const values = Array.isArray(rawValue) ? rawValue : [rawValue];
-
-  const labels = values
-    .map((value) => {
-      if (!value) {
-        return null;
-      }
-
-      if (typeof value === 'string') {
-        return value;
-      }
-
-      if (typeof value === 'object') {
-        return value.name || value.label || value.value || value.id || null;
-      }
-
-      return null;
-    })
-    .filter(Boolean);
-
-  if (labels.length === 0) {
-    return null;
-  }
-
-  return labels.join(', ');
-};
-
 const extractDeadlineFromCustomField = (customFields, { deadlineFieldId } = {}) => {
   const deadlineField = findCustomField(customFields, {
     id: deadlineFieldId,
@@ -311,7 +272,6 @@ const mapTask = (task, options = {}) => {
     priorityColor: task.priority?.color || null,
     tags,
     tagDetails,
-    projectName: extractProjectFromCustomField(customFields, options),
     deadline: extractDeadlineFromCustomField(customFields, options),
     url: task.url,
   };
@@ -330,7 +290,6 @@ export function useClickUpTasks() {
       listId: import.meta.env.VITE_CLICKUP_LIST_ID,
       apiBase: resolveApiBase(),
       tagsFieldId: import.meta.env.VITE_CLICKUP_TAGS_FIELD_ID,
-      projectFieldId: import.meta.env.VITE_CLICKUP_PROJECT_FIELD_ID,
       deadlineFieldId:
         import.meta.env.VITE_CLICKUP_DEADLINE_FIELD_ID || DEFAULT_DEADLINE_FIELD_ID,
     };

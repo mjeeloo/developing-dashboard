@@ -867,9 +867,6 @@ function App() {
                       <th scope="col" className="assignee-column">
                         Assignee
                       </th>
-                      <th scope="col" className="project-column">
-                        Project
-                      </th>
                       <th scope="col">Priority</th>
                       <th scope="col">Deadline</th>
                     </tr>
@@ -952,9 +949,6 @@ function App() {
                             ) : (
                               PLACEHOLDER
                             )}
-                          </td>
-                          <td className="project-column">
-                            {task.projectName ?? PLACEHOLDER}
                           </td>
                           <td className="priority-cell">
                             <PriorityBadge
@@ -1164,49 +1158,6 @@ function App() {
                                       {tag.name}
                                     </span>
                                   ))}
-                                  {task.projectName ? (
-                                    <span className="meta-pill task-project">
-                                      <svg
-                                        className="project-icon"
-                                        viewBox="0 0 16 16"
-                                        role="img"
-                                        aria-hidden="true"
-                                      >
-                                        <rect
-                                          x="2"
-                                          y="5.25"
-                                          width="12"
-                                          height="8.25"
-                                          rx="2.1"
-                                          stroke="currentColor"
-                                          fill="none"
-                                        />
-                                        <path
-                                          d="M2.1 7.4h11.8"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                        />
-                                        <path
-                                          d="M5.75 5.25V4.2M10.25 5.25V4.2"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                        />
-                                        <path
-                                          d="M5.75 4.2A2.35 2.35 0 0 1 8 1.85A2.35 2.35 0 0 1 10.25 4.2"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          fill="none"
-                                        />
-                                        <path
-                                          d="M6.7 9.3h2.6"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                        />
-                                      </svg>
-                                      <span>{task.projectName}</span>
-                                    </span>
-                                  ) : null}
                                   {task.deadline
                                     ? (() => {
                                         const dl = new Date(task.deadline);
