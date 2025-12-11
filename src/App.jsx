@@ -549,12 +549,11 @@ const getDeadlineSortValue = (task) => {
     return Number.MAX_SAFE_INTEGER;
   }
 
-  const source = task.deadline ?? task.dueDate;
-  if (!source) {
+  if (!task.dueDate) {
     return Number.MAX_SAFE_INTEGER;
   }
 
-  const timestamp = Date.parse(source);
+  const timestamp = Date.parse(task.dueDate);
   return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
 };
 
@@ -889,10 +888,8 @@ function App() {
                         displayName === PLACEHOLDER ? undefined : displayName;
                       const bubbleInitialSource =
                         primaryAssignee?.name ?? assigneeName ?? "";
-                      const deadlineValue = task.deadline ?? task.dueDate;
-                      const deadlineDate = deadlineValue
-                        ? new Date(deadlineValue)
-                        : null;
+                      const deadlineValue = task.dueDate;
+                      const deadlineDate = deadlineValue ? new Date(deadlineValue) : null;
                       const isValidDeadline =
                         !!deadlineDate && !Number.isNaN(deadlineDate.getTime());
                       const nowY = now.getFullYear();
@@ -1158,9 +1155,9 @@ function App() {
                                       {tag.name}
                                     </span>
                                   ))}
-                                  {task.deadline
+                                  {task.dueDate
                                     ? (() => {
-                                        const dl = new Date(task.deadline);
+                                        const dl = new Date(task.dueDate);
                                         const valid = !Number.isNaN(
                                           dl.getTime()
                                         );
@@ -1210,10 +1207,10 @@ function App() {
                                               />
                                             </svg>
                                             <span className="sr-only">
-                                              Due {formatDate(task.deadline)}
+                                              Due {formatDate(task.dueDate)}
                                             </span>
                                             <span aria-hidden="true">
-                                              {formatDate(task.deadline)}
+                                              {formatDate(task.dueDate)}
                                             </span>
                                           </span>
                                         );
